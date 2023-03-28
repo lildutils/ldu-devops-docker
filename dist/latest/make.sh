@@ -17,7 +17,7 @@ install() {
     _doInstallDevOps
     _doDockerComposeUp
     _doDockerGCC
-    #_doTerminalClean
+    _doTerminalClean
 }
 
 backup() {
@@ -116,14 +116,11 @@ _doInstallDevOps() {
     if [ ! -d "$DIR_DEVOPS_BACKUPS/" ]; then mkdir -p $DIR_DEVOPS_BACKUPS/; fi
     if [ ! -d "$DIR_DEVOPS_DATA/" ]; then mkdir -p $DIR_DEVOPS_DATA/; fi
 
-    rm -rf $DIR_DEVOPS/docker-compose.env
     rm -rf $DIR_DEVOPS/docker-compose.yml
 
     if [ ! -f $DIR_DEVOPS/.env ]; then
-        curl -sL "$FILE_DEVOPS_ENV" -o $DIR_DEVOPS/docker-compose.env
-        nano $DIR_DEVOPS/docker-compose.env
-        cp $DIR_DEVOPS/docker-compose.env $DIR_DEVOPS/.env
-        cp rm -rf $DIR_DEVOPS/docker-compose.env
+        curl -sL "$FILE_DEVOPS_ENV" -o $DIR_DEVOPS/.env
+        nano $DIR_DEVOPS/.env
     fi
     curl -sL "$FILE_DEVOPS_COMPOSE" -o $DIR_DEVOPS/docker-compose.yml
 }
@@ -155,9 +152,9 @@ _doDockerComposeUpPre() {
             echo "GRANT ALL PRIVILEGES ON proxymanager.* TO '$PROXYMNGR_DB_USER'@'%';" >>./tmp/mysql-init.sql
 
             sleep 30 # TODO: wait for service 'mysql' has started, avoid sleep
-            docker exec -i mysql sh -c "exec mysql -u$MYSQL_ROOT_USER -p'$MYSQL_ROOT_PASSWORD'" <./mysql-init.sql
+            docker exec -i mysql sh -c "exec mysql -u$MYSQL_ROOT_USER -p'$MYSQL_ROOT_PASSWORD'" <./tmp/mysql-init.sql
 
-            rm -rf ./mysql-init.sql
+            rm -rf ./tmp/mysql-init.sql
         fi
 
         if [ "$dbClient" == "pgadmin" ]; then
@@ -170,7 +167,7 @@ _doDockerComposeUpPre() {
             sleep 30 # TODO: wait for service 'postgres' has started, avoid sleep
             docker exec -i postgres sh -c "exec psql -u$POSTGRES_ROOT_USER -p$POSTGRES_ROOT_PASSWORD" <./tmp/postgres-init.sql
 
-            rm -rf ./tmp/init-postgres.sql
+            rm -rf ./tmp/postgres-init.sql
         fi
     done
 }
@@ -193,6 +190,7 @@ _doDockerClean() {
 }
 
 _doTerminalClean() {
+    read -r -p "Press any key to continue..." -t 5 -n 1 -s
     rm -rf ~/.cache/ ~/.config/ ~/.docker/ ~/.gnupg/ ~/.local/ ~/.nano/ ~/.bash_history ~/.selected_editor ~/.sudo_as_admin_successful
     history -c
     clear
