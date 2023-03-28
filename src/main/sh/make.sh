@@ -86,16 +86,16 @@ _doInstallTools() {
     echo "port = 22" >>/etc/fail2ban/jail.local
     echo "filter = sshd" >>/etc/fail2ban/jail.local
     echo "logpath = /var/log/auth.log" >>/etc/fail2ban/jail.local
-    echo "maxretry = 3" >>/etc/fail2ban/jail.local
+    echo "maxretry = $FAIL2BAN_MAX_RETRY" >>/etc/fail2ban/jail.local
     systemctl restart fail2ban
 }
 
 _doInstallDocker() {
-    mkdir ./tmp/
+    mkdir -p ./tmp/
     curl -sL "https://get.docker.com" -o ./tmp/install-docker.sh
     chmod 755 ./tmp/install-docker.sh
     /bin/sh ./tmp/install-docker.sh
-    rm -rf ./tmp/
+    rm -rf ./tmp/install-docker.sh
 }
 
 _doInstallDockerCompose() {
