@@ -7,10 +7,13 @@ clean:
 
 .PHONY: build
 build:
-	((mkdir -p ./dist/${VERSION}/) ; \
-	 (mkdir -p ./dist/${VERSION}/docker/) ; \
-	 (mkdir -p ./dist/${VERSION}/devops/) ; \
-	 (find ./src/main/resources/ -name 'docker-*.env' -exec cp "{}" ./dist/${VERSION}/docker/ \;) ; \
-	 (find ./src/main/resources/ -name 'docker-*.yml' -exec cp "{}" ./dist/${VERSION}/docker/ \;) ; \
-	 (find ./src/main/sh/ -name 'make.sh' -exec cp "{}" ./dist/${VERSION}/devops/make.sh \;) ; \
+	((rm -rf ./build/) ; \
+	 (mkdir -p ./build/${VERSION}/docker/) ; \
+	 (find ./src/main/resources/ -name 'docker-*.env' -exec cp "{}" ./build/${VERSION}/docker/ \;) ; \
+	 (find ./src/main/resources/ -name 'docker-*.yml' -exec cp "{}" ./build/${VERSION}/docker/ \;) ; \
+	 (cp ./LICENSE ./build/${VERSION}/) ; \
+	 (find ./src/main/sh/ -name 'make.sh' -exec cp "{}" ./build/${VERSION}/make.sh \;) ; \
+	 (cp ./README.md ./build/${VERSION}/) ; \
+	 (cp ./VERSION ./build/${VERSION}/) ; \
+	 (cp -r ./build/${VERSION}/ ./dist/${VERSION}/) ; \
 	 (cp -r ./dist/${VERSION}/ ./dist/latest/))
