@@ -11,12 +11,13 @@ clean:
 .PHONY: build
 build:
 	((rm -rf ./build/) ; \
-	 (mkdir -p ./build/docker/) ; \
-	 (find ./src/main/resources/ -name 'docker-*.env' -exec cp "{}" ./build/docker/ \;) ; \
-	 (find ./src/main/resources/ -name 'docker-*.yml' -exec cp "{}" ./build/docker/ \;) ; \
+	 (mkdir -p ./build/resources/) ; \
+	 (find ./src/main/resources/ -name '*.example' -exec cp "{}" ./build/resources/ \;) ; \
+	 (find ./src/main/resources/ -name '*.yml' -exec cp "{}" ./build/resources/ \;) ; \
 	 (cp ./LICENSE ./build/) ; \
-	 (find ./src/main/sh/ -name 'make.sh' -exec cp "{}" ./build/make.sh \;) ; \
-	 (cp ./README.md ./build/) ; \
+	 (find ./src/main/sh/ -name '*.sh' -exec cp "{}" ./build/ \;) ; \
+	 (chmod 755 ./build/make.sh) ; \
+	 (cp ./src/main/resources/README.txt ./build/) ; \
 	 (cp ./VERSION ./build/) ; \
 	 (cp -r ./build/ ./dist/${VERSION}/) ; \
 	 (cp -r ./dist/${VERSION}/ ./dist/latest/))

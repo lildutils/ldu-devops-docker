@@ -17,7 +17,7 @@ install() {
     _doInstallDevOps
     _doDockerComposeUp
     _doDockerGCC
-    _doTerminalClean
+    #_doTerminalClean
 }
 
 backup() {
@@ -122,6 +122,8 @@ _doInstallDevOps() {
     if [ ! -f $DIR_DEVOPS/.env ]; then
         curl -sL "$FILE_DEVOPS_ENV" -o $DIR_DEVOPS/docker-compose.env
         nano $DIR_DEVOPS/docker-compose.env
+        cp $DIR_DEVOPS/docker-compose.env $DIR_DEVOPS/.env
+        cp rm -rf $DIR_DEVOPS/docker-compose.env
     fi
     curl -sL "$FILE_DEVOPS_COMPOSE" -o $DIR_DEVOPS/docker-compose.yml
 }
