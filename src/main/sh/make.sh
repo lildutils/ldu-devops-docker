@@ -80,9 +80,12 @@ _doInstallTools() {
     ufw enable
     ufw default deny incoming
     ufw default deny outgoing
-    ufw allow ssh
-    ufw allow http
-    ufw allow https
+    for rule in ${UFW_ALLOW_IN//,/ }; do
+        ufw allow in $rule
+    done
+    for rule in ${UFW_ALLOW_OUT//,/ }; do
+        ufw allow out $rule
+    done
     ufw reload
 
     systemctl start fail2ban

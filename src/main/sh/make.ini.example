@@ -9,3 +9,5 @@ FILE_DEVOPS_COMPOSE=https://downloads.lildworks.cloud/ldt/devops/latest/docker-c
 
 GITLAB_RUNNER_REGISTRATION_TOKEN=registration-token
 
+UFW_ALLOW_IN=http,https,ssh
+UFW_ALLOW_OUT=http,https,53/udp
