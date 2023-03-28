@@ -148,25 +148,25 @@ _doDockerComposeUpPre() {
         if [ "$dbClient" == "phpmyadmin" ]; then
             mkdir -p ./tmp/
 
-            echo "CREATE USER '$PROXYMNGR_DB_USER'@'localhost' IDENTIFIED BY '$PROXYMNGR_DB_PASSWORD';" >./tmp/init-mysql.sql
-            echo "CREATE DATABASE proxymanager;" >>./tmp/init-mysql.sql
-            echo "GRANT PRIVILEGE ON proxymanager TO '$PROXYMNGR_DB_USER'@'localhost' WITH GRANT OPTION;" >>./tmp/init-mysql.sql
+            echo "CREATE USER '$PROXYMNGR_DB_USER'@'%' IDENTIFIED BY '$PROXYMNGR_DB_PASSWORD';" >./tmp/mysql-init.sql
+            echo "CREATE DATABASE proxymanager;" >>./tmp/mysql-init.sql
+            echo "GRANT ALL PRIVILEGES ON proxymanager.* TO '$PROXYMNGR_DB_USER'@'%';" >>./tmp/mysql-init.sql
 
             sleep 30 # TODO: wait for service 'mysql' has started, avoid sleep
-            docker exec mysql sh -c "mysql -u$MYSQL_ROOT_USER -p$MYSQL_ROOT_PASSWORD<./tmp/init-mysql.sql"
+            docker exec -i mysql sh -c "exec mysql -u$MYSQL_ROOT_USER -p'$MYSQL_ROOT_PASSWORD'" <./mysql-init.sql
 
-            rm -rf ./tmp/init-mysql.sql
+            rm -rf ./mysql-init.sql
         fi
 
         if [ "$dbClient" == "pgadmin" ]; then
             mkdir -p ./tmp/
 
-            echo "CREATE ROLE $SONARQUBE_SONAR_USER WITH LOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '$SONARQUBE_SONAR_PASSWORD';" >./tmp/init-postgres.sql
-            echo "CREATE DATABASE sonar WITH OWNER = sonar;" >>./tmp/init-postgres.sql
-            echo "GRANT ALL PRIVILEGES ON DATABASE sonar TO $SONARQUBE_SONAR_USER WITH GRANT OPTION;" >>./tmp/init-postgres.sql
+            echo "CREATE ROLE $SONARQUBE_SONAR_USER WITH LOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '$SONARQUBE_SONAR_PASSWORD';" >./tmp/postgres-init.sql
+            echo "CREATE DATABASE sonar WITH OWNER = sonar;" >>./tmp/postgres-init.sql
+            echo "GRANT ALL PRIVILEGES ON DATABASE sonar TO $SONARQUBE_SONAR_USER;" >>./tmp/postgres-init.sql
 
             sleep 30 # TODO: wait for service 'postgres' has started, avoid sleep
-            docker exec postgres sh -c "psql -u$MYSQL_ROOT_USER -p$MYSQL_ROOT_PASSWORD<./tmp/init-postgres.sql"
+            docker exec -i postgres sh -c "exec psql -u$POSTGRES_ROOT_USER -p$POSTGRES_ROOT_PASSWORD" <./tmp/postgres-init.sql
 
             rm -rf ./tmp/init-postgres.sql
         fi
