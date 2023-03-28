@@ -2,12 +2,32 @@
 
 main() {
     COMMAND=$1
+    if [ "$1" == "" ]; then COMMAND=install; fi
     CURRDIR=$(realpath $(dirname "${BASH_SOURCE[0]}")/)
-    INIFILE=$(realpath $(dirname "${BASH_SOURCE[0]}")/make.ini)
-    if [ -f $INIFILE ]; then export $(cat $INIFILE | xargs); fi
+    _loadEnvironment
     shift
     $COMMAND $*
     exit 0
+}
+
+_loadEnvironment() {
+    ## load default environment
+    DIR_DEVOPS=/devops
+    DIR_DEVOPS_BACKUPS=/backups
+    DIR_DEVOPS_DATA=/data
+    DOCKER_INIT_DB_CLIENTS=phpmyadmin,pgadmin,mongoxpress
+    FAIL2BAN_MAX_RETRY=3
+    FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops/develop/dist/latest/resources/docker-compose.env.example
+    FILE_DEVOPS_COMPOSE=https://raw.githubusercontent.com/lildutils/ldu-devops/develop/dist/latest/resources/docker-compose.yml
+    GITLAB_RUNNER_REGISTRATION_TOKEN=registration-token
+    UFW_ALLOW_IN=http,https,ssh
+    UFW_ALLOW_OUT=http,https,53/udp
+
+    ## override environment if .ini file exists
+    INIFILE=$(realpath $(dirname "${BASH_SOURCE[0]}")/make.ini)
+    if [ -f $INIFILE ]; then
+        export $(cat $INIFILE | xargs)
+    fi
 }
 
 install() {
