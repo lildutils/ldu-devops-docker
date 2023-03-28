@@ -127,7 +127,55 @@ _doInstallDevOps() {
 }
 
 _doDockerComposeUp() {
-    docker-compose --project-name devops --project-directory $DIR_DEVOPS --file $DIR_DEVOPS/docker-compose.yml up -d --remove-orphans
+    _doDockerComposeUpPre
+
+    docker-compose \
+        --project-name devops \
+        --project-directory $DIR_DEVOPS \
+        --file $DIR_DEVOPS/docker-compose.yml \
+        up -d \
+        --remove-orphans
+
+    _doDockerComposeUpPost
+}
+
+_doDockerComposeUpPre() {
+    if [ -f $DIR_DEVOPS/.env ]; then export $(cat $DIR_DEVOPS/.env | xargs); fi
+
+    for dbClient in ${DOCKER_INIT_DB_CLIENTS//,/ }; do
+        docker-compose --project-name devops --project-directory $DIR_DEVOPS --file $DIR_DEVOPS/docker-compose.yml up -d $dbClient
+
+        if [ "$dbClient" == "phpmyadmin" ]; then
+            mkdir -p ./tmp/
+
+            echo "CREATE USER '$PROXYMNGR_DB_USER'@'localhost' IDENTIFIED BY '$PROXYMNGR_DB_PASSWORD';" >./tmp/init-mysql.sql
+            echo "CREATE DATABASE proxymanager;" >>./tmp/init-mysql.sql
+            echo "GRANT PRIVILEGE ON proxymanager TO '$PROXYMNGR_DB_USER'@'localhost' WITH GRANT OPTION;" >>./tmp/init-mysql.sql
+
+            sleep 30 # TODO: wait for service 'mysql' has started, avoid sleep
+            docker exec mysql sh -c "mysql -u$MYSQL_ROOT_USER -p$MYSQL_ROOT_PASSWORD<./tmp/init-mysql.sql"
+
+            rm -rf ./tmp/init-mysql.sql
+        fi
+
+        if [ "$dbClient" == "pgadmin" ]; then
+            mkdir -p ./tmp/
+
+            echo "CREATE ROLE $SONARQUBE_SONAR_USER WITH LOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '$SONARQUBE_SONAR_PASSWORD';" >./tmp/init-postgres.sql
+            echo "CREATE DATABASE sonar WITH OWNER = sonar;" >>./tmp/init-postgres.sql
+            echo "GRANT ALL PRIVILEGES ON DATABASE sonar TO $SONARQUBE_SONAR_USER WITH GRANT OPTION;" >>./tmp/init-postgres.sql
+
+            sleep 30 # TODO: wait for service 'postgres' has started, avoid sleep
+            docker exec postgres sh -c "psql -u$MYSQL_ROOT_USER -p$MYSQL_ROOT_PASSWORD<./tmp/init-postgres.sql"
+
+            rm -rf ./tmp/init-postgres.sql
+        fi
+    done
+}
+
+_doDockerComposeUpPost() {
+    docker --version
+    docker-compose --version
 }
 
 _doDockerGCC() {

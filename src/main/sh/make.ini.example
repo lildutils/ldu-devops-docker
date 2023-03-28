@@ -2,10 +2,12 @@ DIR_DEVOPS=/devops
 DIR_DEVOPS_BACKUPS=/backups
 DIR_DEVOPS_DATA=/data
 
+DOCKER_INIT_DB_CLIENTS=phpmyadmin,pgadmin,mongoxpress
+
 FAIL2BAN_MAX_RETRY=3
 
-FILE_DEVOPS_ENV=https://downloads.lildworks.cloud/ldt/devops/latest/docker-compose.env
-FILE_DEVOPS_COMPOSE=https://downloads.lildworks.cloud/ldt/devops/latest/docker-compose.yml
+FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops/master/src/main/resources/docker-compose.env
+FILE_DEVOPS_COMPOSE=https://raw.githubusercontent.com/lildutils/ldu-devops/master/src/main/resources/docker-compose.yml
 
 GITLAB_RUNNER_REGISTRATION_TOKEN=registration-token
 
