@@ -6,7 +6,6 @@ main() {
     INIFILE=$(realpath $(dirname "${BASH_SOURCE[0]}")/make.ini)
     if [ -f $INIFILE ]; then export $(cat $INIFILE | xargs); fi
     shift
-    CURRUSER=$USER
     $COMMAND $*
     exit 0
 }
@@ -18,6 +17,7 @@ install() {
     _doInstallDevOps
     _doDockerComposeUp
     _doDockerGCC
+    _doTerminalClean
 }
 
 backup() {
@@ -42,6 +42,8 @@ backup() {
     ## TODO: portainer
 
     ## TODO: databases
+
+    _doTerminalClean
 }
 
 clean() {
@@ -49,6 +51,8 @@ clean() {
 
     rm -rf $DEVOPS_DATA_DIR/
     rm -rf $DEVOPS_ROOT_DIR/
+
+    _doTerminalClean
 }
 
 registerGitlabRunner() {
@@ -60,6 +64,8 @@ registerGitlabRunner() {
         --tag-list docker,docker-stable \
         --executor docker \
         --docker-image docker:stable
+
+    _doTerminalClean
 }
 
 _doInstallTools() {
@@ -117,13 +123,11 @@ _doInstallDevOps() {
 }
 
 _doDockerComposeUp() {
-    su docker
     docker-compose --project-name devops --project-directory $DIR_DEVOPS --file $DIR_DEVOPS/docker-compose.yml up -d --remove-orphans
-    su $CURRUSER
 }
 
 _doDockerGCC() {
-    docker system prune
+    echo y | docker system prune
 }
 
 _doDockerClean() {
@@ -132,6 +136,12 @@ _doDockerClean() {
     docker volume rm --force $(docker volume ls -aq)
     docker image rm --force $(docker image ls -aq)
     docker network rm --force $(docker network ls -aq)
+}
+
+_doTerminalClean() {
+    rm -rf ~/.cache/ ~/.config/ ~/.docker/ ~/.gnupg/ ~/.local/ ~/.nano/ ~/.bash_history ~/.selected_editor ~/.sudo_as_admin_successful
+    history -c
+    clear
 }
 
 main $*
