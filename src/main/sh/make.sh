@@ -121,6 +121,7 @@ _doInstallDevOps() {
 
     if [ ! -f $DIR_DEVOPS/.env ]; then
         curl -sL "$FILE_DEVOPS_ENV" -o $DIR_DEVOPS/docker-compose.env
+        nano $DIR_DEVOPS/docker-compose.env
     fi
     curl -sL "$FILE_DEVOPS_COMPOSE" -o $DIR_DEVOPS/docker-compose.yml
 }
