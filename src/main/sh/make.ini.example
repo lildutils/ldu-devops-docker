@@ -1,6 +1,0 @@
-DIR_DEVOPS=/devops
-DIR_DEVOPS_BACKUPS=/backups
-DIR_DEVOPS_DATA=/data
-GITLAB_RUNNER_REGISTRATION_TOKEN=registration-token
-FILE_DEVOPS_ENV=https://downloads.lildworks.cloud/ldt/devops/latest/docker-compose.env
-FILE_DEVOPS_COMPOSE=https://downloads.lildworks.cloud/ldt/devops/latest/docker-compose.yml

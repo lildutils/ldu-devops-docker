@@ -1,0 +1,10 @@
+DIR_DEVOPS=/devops
+DIR_DEVOPS_BACKUPS=/backups
+DIR_DEVOPS_DATA=/data
+DOCKER_INIT_DB_CLIENTS=phpmyadmin,pgadmin,mongoxpress
+FAIL2BAN_MAX_RETRY=3
+FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops/master/dist/latest/resources/docker-compose.env.example
+FILE_DEVOPS_COMPOSE=https://raw.githubusercontent.com/lildutils/ldu-devops/master/dist/latest/resources/docker-compose.yml
+GITLAB_RUNNER_REGISTRATION_TOKEN=registration-token
+UFW_ALLOW_IN=http,https,ssh
+UFW_ALLOW_OUT=http,https,53/udp

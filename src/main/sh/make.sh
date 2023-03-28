@@ -2,13 +2,32 @@
 
 main() {
     COMMAND=$1
+    if [ "$1" == "" ]; then COMMAND=install; fi
     CURRDIR=$(realpath $(dirname "${BASH_SOURCE[0]}")/)
-    INIFILE=$(realpath $(dirname "${BASH_SOURCE[0]}")/make.ini)
-    if [ -f $INIFILE ]; then export $(cat $INIFILE | xargs); fi
+    _loadEnvironment
     shift
-    CURRUSER=$USER
     $COMMAND $*
     exit 0
+}
+
+_loadEnvironment() {
+    ## load default environment
+    DIR_DEVOPS=/devops
+    DIR_DEVOPS_BACKUPS=/backups
+    DIR_DEVOPS_DATA=/data
+    DOCKER_INIT_DB_CLIENTS=phpmyadmin,pgadmin,mongoxpress
+    FAIL2BAN_MAX_RETRY=3
+    FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops/master/dist/latest/resources/docker-compose.env.example
+    FILE_DEVOPS_COMPOSE=https://raw.githubusercontent.com/lildutils/ldu-devops/master/dist/latest/resources/docker-compose.yml
+    GITLAB_RUNNER_REGISTRATION_TOKEN=registration-token
+    UFW_ALLOW_IN=http,https,ssh
+    UFW_ALLOW_OUT=http,https,53/udp
+
+    ## override environment if .ini file exists
+    INIFILE=$(realpath $(dirname "${BASH_SOURCE[0]}")/make.ini)
+    if [ -f $INIFILE ]; then
+        export $(cat $INIFILE | xargs)
+    fi
 }
 
 install() {
@@ -18,6 +37,7 @@ install() {
     _doInstallDevOps
     _doDockerComposeUp
     _doDockerGCC
+    _doTerminalClean
 }
 
 backup() {
@@ -42,6 +62,8 @@ backup() {
     ## TODO: portainer
 
     ## TODO: databases
+
+    _doTerminalClean
 }
 
 clean() {
@@ -49,6 +71,8 @@ clean() {
 
     rm -rf $DEVOPS_DATA_DIR/
     rm -rf $DEVOPS_ROOT_DIR/
+
+    _doTerminalClean
 }
 
 registerGitlabRunner() {
@@ -60,6 +84,8 @@ registerGitlabRunner() {
         --tag-list docker,docker-stable \
         --executor docker \
         --docker-image docker:stable
+
+    _doTerminalClean
 }
 
 _doInstallTools() {
@@ -74,9 +100,12 @@ _doInstallTools() {
     ufw enable
     ufw default deny incoming
     ufw default deny outgoing
-    ufw allow ssh
-    ufw allow http
-    ufw allow https
+    for rule in ${UFW_ALLOW_IN//,/ }; do
+        ufw allow in $rule
+    done
+    for rule in ${UFW_ALLOW_OUT//,/ }; do
+        ufw allow out $rule
+    done
     ufw reload
 
     systemctl start fail2ban
@@ -86,16 +115,16 @@ _doInstallTools() {
     echo "port = 22" >>/etc/fail2ban/jail.local
     echo "filter = sshd" >>/etc/fail2ban/jail.local
     echo "logpath = /var/log/auth.log" >>/etc/fail2ban/jail.local
-    echo "maxretry = 3" >>/etc/fail2ban/jail.local
+    echo "maxretry = $FAIL2BAN_MAX_RETRY" >>/etc/fail2ban/jail.local
     systemctl restart fail2ban
 }
 
 _doInstallDocker() {
-    mkdir ./tmp/
+    mkdir -p ./tmp/
     curl -sL "https://get.docker.com" -o ./tmp/install-docker.sh
     chmod 755 ./tmp/install-docker.sh
     /bin/sh ./tmp/install-docker.sh
-    rm -rf ./tmp/
+    rm -rf ./tmp/install-docker.sh
 }
 
 _doInstallDockerCompose() {
@@ -107,23 +136,69 @@ _doInstallDevOps() {
     if [ ! -d "$DIR_DEVOPS_BACKUPS/" ]; then mkdir -p $DIR_DEVOPS_BACKUPS/; fi
     if [ ! -d "$DIR_DEVOPS_DATA/" ]; then mkdir -p $DIR_DEVOPS_DATA/; fi
 
-    rm -rf $DIR_DEVOPS/docker-compose.env
     rm -rf $DIR_DEVOPS/docker-compose.yml
 
     if [ ! -f $DIR_DEVOPS/.env ]; then
-        curl -sL "$FILE_DEVOPS_ENV" -o $DIR_DEVOPS/docker-compose.env
+        curl -sL "$FILE_DEVOPS_ENV" -o $DIR_DEVOPS/.env
+        nano $DIR_DEVOPS/.env
     fi
     curl -sL "$FILE_DEVOPS_COMPOSE" -o $DIR_DEVOPS/docker-compose.yml
 }
 
 _doDockerComposeUp() {
-    su docker
-    docker-compose --project-name devops --project-directory $DIR_DEVOPS --file $DIR_DEVOPS/docker-compose.yml up -d --remove-orphans
-    su $CURRUSER
+    _doDockerComposeUpPre
+
+    docker-compose \
+        --project-name devops \
+        --project-directory $DIR_DEVOPS \
+        --file $DIR_DEVOPS/docker-compose.yml \
+        up -d \
+        --remove-orphans
+
+    _doDockerComposeUpPost
+}
+
+_doDockerComposeUpPre() {
+    if [ -f $DIR_DEVOPS/.env ]; then export $(cat $DIR_DEVOPS/.env | xargs); fi
+
+    for dbClient in ${DOCKER_INIT_DB_CLIENTS//,/ }; do
+        docker-compose --project-name devops --project-directory $DIR_DEVOPS --file $DIR_DEVOPS/docker-compose.yml up -d $dbClient
+
+        if [ "$dbClient" == "phpmyadmin" ]; then
+            mkdir -p ./tmp/
+
+            echo "CREATE USER '$PROXYMNGR_DB_USER'@'%' IDENTIFIED BY '$PROXYMNGR_DB_PASSWORD';" >./tmp/mysql-init.sql
+            echo "CREATE DATABASE proxymanager;" >>./tmp/mysql-init.sql
+            echo "GRANT ALL PRIVILEGES ON proxymanager.* TO '$PROXYMNGR_DB_USER'@'%';" >>./tmp/mysql-init.sql
+
+            sleep 30 # TODO: wait for service 'mysql' has started, avoid sleep
+            docker exec -i mysql sh -c "exec mysql -u$MYSQL_ROOT_USER -p'$MYSQL_ROOT_PASSWORD'" <./tmp/mysql-init.sql
+
+            rm -rf ./tmp/mysql-init.sql
+        fi
+
+        if [ "$dbClient" == "pgadmin" ]; then
+            mkdir -p ./tmp/
+
+            echo "CREATE ROLE $SONARQUBE_SONAR_USER WITH LOGIN NOSUPERUSER INHERIT NOCREATEDB NOCREATEROLE NOREPLICATION PASSWORD '$SONARQUBE_SONAR_PASSWORD';" >./tmp/postgres-init.sql
+            echo "CREATE DATABASE sonar WITH OWNER = sonar;" >>./tmp/postgres-init.sql
+            echo "GRANT ALL PRIVILEGES ON DATABASE sonar TO $SONARQUBE_SONAR_USER;" >>./tmp/postgres-init.sql
+
+            sleep 30 # TODO: wait for service 'postgres' has started, avoid sleep
+            docker exec -i postgres sh -c "exec psql -u$POSTGRES_ROOT_USER -p$POSTGRES_ROOT_PASSWORD" <./tmp/postgres-init.sql
+
+            rm -rf ./tmp/postgres-init.sql
+        fi
+    done
+}
+
+_doDockerComposeUpPost() {
+    docker --version
+    docker-compose --version
 }
 
 _doDockerGCC() {
-    docker system prune
+    echo y | docker system prune
 }
 
 _doDockerClean() {
@@ -132,6 +207,13 @@ _doDockerClean() {
     docker volume rm --force $(docker volume ls -aq)
     docker image rm --force $(docker image ls -aq)
     docker network rm --force $(docker network ls -aq)
+}
+
+_doTerminalClean() {
+    read -r -p "Press any key to continue..." -t 5 -n 1 -s
+    rm -rf ~/.cache/ ~/.config/ ~/.docker/ ~/.gnupg/ ~/.local/ ~/.nano/ ~/.bash_history ~/.selected_editor ~/.sudo_as_admin_successful
+    history -c
+    clear
 }
 
 main $*

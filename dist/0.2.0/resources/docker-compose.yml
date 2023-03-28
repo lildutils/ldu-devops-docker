@@ -145,13 +145,12 @@ services:
     hostname: 'proxy-manager.daniderdak.local'
     restart: unless-stopped
     environment:
-      - DB_SQLITE_FILE=/data/database.sqlite
       - DISABLE_IPV6='false'
       - DB_MYSQL_HOST=mysql
       - DB_MYSQL_PORT=3306
       - DB_MYSQL_USER=$PROXYMNGR_DB_USER
       - DB_MYSQL_PASSWORD=$PROXYMNGR_DB_PASSWORD
-      - DB_MYSQL_NAME=$PROXYMNGR_DB_DATABASENAME
+      - DB_MYSQL_NAME=proxymanager
     volumes:
       - /data/nginx/data:/data
       - /data/nginx/letsencrypt:/etc/letsencrypt
@@ -177,7 +176,7 @@ services:
         nginx['listen_https'] = false
         letsencrypt['enable'] = false
         gitlab_rails['trusted_proxies'] = ["localhost", "$GITLAB_EXTERNAL_DOMAIN"]
-        gitlab_rails['smtp_enable'] = true
+        gitlab_rails['smtp_enable'] = $GITLAB_SMTP_ENABLED
         gitlab_rails['smtp_address'] = "$GITLAB_SMTP_SERVER"
         gitlab_rails['smtp_port'] = $GITLAB_SMTP_PORT
         gitlab_rails['smtp_user_name'] = "$GITLAB_SMTP_USER"
