@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 
+## [0.7.0](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.7.0) (2023-03-29)
+
+- FIX: Docker Compose file for full devops
+- FEAT: Install vscode container post script created
+
 ## [0.6.0](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.6.0) (2023-03-29)
 
 - FEAT: Docker compose services part #1
