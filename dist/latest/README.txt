@@ -1,8 +1,8 @@
-ldu-devops
+ldu-devops-docker
 - Have a good DevOPSing!
 -- For more infor please visit the official site:
 
-    https://lildutils.hu/projects/ldu-devops/about.html
+    https://lildutils.hu/projects/ldu-devops-docker/about.html
 
 Bests,
 d

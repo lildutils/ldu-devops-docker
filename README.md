@@ -1,6 +1,6 @@
 # README
 
-[ldu-devops](https://lildutils.hu/projects/ldu-devops/about.html)
+[ldu-devops-docker](https://lildutils.hu/projects/ldu-devops-docker/about.html)
 
 ---
 
@@ -97,7 +97,7 @@ Services is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing el
 Auto-Install is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
 
 ``` sh
-bash <(curl -sL https://raw.githubusercontent.com/lildutils/ldu-devops/master/dist/latest/make.sh)
+bash <(curl -sL https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/make.sh)
 ```
 
 ### Download to AnyWhere
@@ -105,7 +105,7 @@ bash <(curl -sL https://raw.githubusercontent.com/lildutils/ldu-devops/master/di
 Download to AnyWhere is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
 
 ``` sh
-curl -sL https://raw.githubusercontent.com/lildutils/ldu-devops/master/dist/latest/make.sh -o /path/to/make.sh
+curl -sL https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/make.sh -o /path/to/make.sh
 ```
 
 ### Configurations
