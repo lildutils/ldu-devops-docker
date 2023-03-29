@@ -18,5 +18,9 @@ _doInstallDevOps() {
 
     curl -sL "$FILE_DEVOPS_COMPOSE" -o $DIR_DEVOPS/docker-compose.yml
 
-    cp $CURRDIR/$MAKEFILENAME $DIR_DEVOPS/
+    if [ -f "$CURRDIR/$MAKEFILENAME" ]; then
+        cp $CURRDIR/$MAKEFILENAME $DIR_DEVOPS/
+    else
+        curl -sL "$FILE_DEVOPS_MAKE" -o $DIR_DEVOPS/$MAKEFILENAME
+    fi
 }
