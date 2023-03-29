@@ -3,7 +3,11 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 
-## [0.4.0](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.3.0) (2023-03-29)
+## [0.5.0](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.5.0) (2023-03-29)
+
+- FIX: Bash application script auto download urls
+
+## [0.4.0](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.4.0) (2023-03-29)
 
 - FIX: Bash application script
 - FIX: Bash compiler lib
