@@ -139,30 +139,23 @@ services:
     ports:
       - 127.0.0.1:6061:8443
 
-  proxymanager:
+  nginx:
     image: jc21/nginx-proxy-manager:2.10.0
-    container_name: proxymanager
+    container_name: nginx
     hostname: 'proxy-manager.daniderdak.local'
     restart: unless-stopped
     environment:
-      - DISABLE_IPV6='false'
-      - DB_MYSQL_HOST=mysql
-      - DB_MYSQL_PORT=3306
-      - DB_MYSQL_USER=$PROXYMNGR_DB_USER
-      - DB_MYSQL_PASSWORD=$PROXYMNGR_DB_PASSWORD
-      - DB_MYSQL_NAME=proxymanager
+      - DB_SQLITE_FILE=/data/database.sqlite
+      - DISABLE_IPV6=false
     volumes:
       - /data/nginx/data:/data
       - /data/nginx/letsencrypt:/etc/letsencrypt
     networks:
-      - proxy
-      - mysql
+      - nginx
     ports:
       - 80:80
       - 443:443
       - 127.0.0.1:81:81
-    depends_on:
-      - mysql
 
   gitlab:
     image: gitlab/gitlab-ce:15.10.0-ce.0
@@ -192,11 +185,11 @@ services:
       - /data/gitlab/logs:/var/log/gitlab
     networks:
       - gitlab
-      - proxy
+      - nginx
     ports:
       - 127.0.0.1:6065:80
     depends_on:
-      - proxymanager
+      - nginx
 
   gitlabrunner:
     image: gitlab/gitlab-runner:alpine3.15-v15.10.0
@@ -214,45 +207,87 @@ services:
     depends_on:
       - gitlab
 
+  sonarqubedb:
+    image: postgres:15-alpine
+    container_name: postgres
+    hostname: 'sonarqubedb.daniderdak.local'
+    restart: unless-stopped
+    environment:
+      - PGDATA=/data/postgres
+      - POSTGRES_DATABASE=sonar
+      - POSTGRES_USER=$SONARQUBE_DB_USER
+      - POSTGRES_PASSWORD=$SONARQUBE_DB_PASSWORD
+    volumes:
+      - /data/sonarqube/db/data:/var/lib/postgresql/data
+      - /data/sonarqube/db/postgres:/data/postgres
+    networks:
+      - sonarqube
+    ports:
+      - 127.0.0.1:60660:5432
+
   sonarqube:
     image: sonarqube:9.9.0-community
     container_name: sonarqube
     hostname: 'sonarqube.daniderdak.local'
     restart: unless-stopped
     environment:
-      - SONAR_JDBC_URL=jdbc:postgresql://postgres:5432/sonar
-      - SONAR_JDBC_USERNAME=$SONARQUBE_SONAR_USER
-      - SONAR_JDBC_PASSWORD=$SONARQUBE_SONAR_PASSWORD
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqubedb:60660/sonar
+      - SONAR_JDBC_USERNAME=$SONARQUBE_DB_USER
+      - SONAR_JDBC_PASSWORD=$SONARQUBE_DB_PASSWORD
     volumes:
       - /data/sonarqube/data:/opt/sonarqube/data
       - /data/sonarqube/extensions:/opt/sonarqube/extensions
       - /data/sonarqube/logs:/opt/sonarqube/logs
     networks:
       - sonarqube
-      - postgres
-      - proxy
+      - nginx
     ports:
       - 127.0.0.1:6066:9000
     depends_on:
-      - proxymanager
+      - sonarqubedb
+      - nginx
 
-  # registry:
-  #   image: registry:2.8.1
-  #   container_name: registry
-  #   hostname: 'registry.daniderdak.local'
-  #   restart: unless-stopped
-  #   environment:
-  #     - REGISTRY_HTTP_ADDR=0.0.0.0:443
-  #     - REGISTRY_AUTH=htpasswd
-  #     - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
-  #     - REGISTRY_AUTH_HTPASSWD_REALM=basic-realm
-  #   volumes:
-  #     - /data/registry/data:/var/lib/registry
-  #     - /data/registry/auth:/auth
-  #   networks:
-  #     - registry
-  #   ports:
-  #     - 127.0.0.1:6067:443
+  registry:
+    image: registry:2.8.1
+    container_name: registry
+    hostname: 'registry.daniderdak.local'
+    restart: unless-stopped
+    environment:
+      - REGISTRY_HTTP_ADDR=0.0.0.0:443
+      - REGISTRY_AUTH=htpasswd
+      - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
+      - REGISTRY_AUTH_HTPASSWD_REALM=basic-realm
+    volumes:
+      - /data/registry/data:/var/lib/registry
+      - /data/registry/auth:/auth
+    networks:
+      - registry
+    ports:
+      - 127.0.0.1:6067:443
+
+  registryauth:
+    image: opensuse/portus:2.5
+    container_name: registryauth
+    hostname: 'registry-auth.daniderdak.local'
+    restart: unless-stopped
+    environment:
+    volumes:
+    networks:
+      - registry
+    ports:
+      - 127.0.0.1:1111:443
+
+  healthcheck:
+    image: linuxserver/healthchecks:2.7.20230324
+    container_name: healthcheck
+    hostname: 'healthcheck.daniderdak.local'
+    restart: unless-stopped
+    environment:
+    volumes:
+    networks:
+      - healthcheck
+    ports:
+      - 127.0.0.1:6069:80
 
 networks:
   portainer:
@@ -265,11 +300,13 @@ networks:
     name: postgres
   vscode:
     name: vscode
-  proxy:
-    name: proxy
+  nginx:
+    name: nginx
   gitlab:
     name: gitlab
   sonarqube:
     name: sonarqube
-  # registry:
-  #   name: registry
+ registry:
+   name: registry
+ healthcheck:
+   name: healthcheck
