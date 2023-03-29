@@ -22,5 +22,6 @@ _doInstallDevOps() {
         cp $CURRDIR/$MAKEFILENAME $DIR_DEVOPS/
     else
         curl -sL "$FILE_DEVOPS_MAKE" -o $DIR_DEVOPS/$MAKEFILENAME
+        chmod 755 $DIR_DEVOPS/$MAKEFILENAME
     fi
 }
