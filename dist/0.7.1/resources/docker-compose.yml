@@ -12,7 +12,7 @@ services:
     networks:
       - portainer
     ports:
-      - 127.0.0.1:6068:9000
+      - 127.0.0.1:6067:9000
 
   mongodb:
     image: mongo:4-focal
@@ -27,8 +27,6 @@ services:
       - /data/mongo/config:/data/configdb
     networks:
       - mongo
-    ports:
-      - 127.0.0.1:27017:27017
 
   mongoxpress:
     image: mongo-express:1.0.0-alpha
@@ -60,9 +58,6 @@ services:
       - /data/mysql/db:/var/lib/mysql
     networks:
       - mysql
-    ports:
-      - 127.0.0.1:3306:3306
-      - 127.0.0.1:33060:33060
 
   phpmyadmin:
     image: phpmyadmin:5.2.1-apache
@@ -94,8 +89,6 @@ services:
       - /data/postgres/db:/data/postgres
     networks:
       - postgres
-    ports:
-      - 127.0.0.1:5432:5432
 
   pgadmin:
     image: dpage/pgadmin4:6.21
@@ -106,7 +99,7 @@ services:
       - PGADMIN_DEFAULT_EMAIL=$POSTGRES_PGADMIN_USER
       - PGADMIN_DEFAULT_PASSWORD=$POSTGRES_PGADMIN_PASSWORD
     volumes:
-      - /data/postgres/pgadmin:/var/lib/pgadmin
+      - data_pgadmin:/var/lib/pgadmin
     networks:
       - postgres
     ports:
@@ -146,6 +139,7 @@ services:
       - DB_SQLITE_FILE=/data/database.sqlite
     volumes:
       - /data/nginx/data:/data
+      - /data/nginx/sqlite/database.sqlite:/data/database.sqlite
       - /data/nginx/letsencrypt:/etc/letsencrypt
     networks:
       - nginx
@@ -182,11 +176,8 @@ services:
       - /data/gitlab/logs:/var/log/gitlab
     networks:
       - gitlab
-      - nginx
     ports:
       - 127.0.0.1:6065:80
-    depends_on:
-      - nginx
 
   gitlabrunner:
     image: gitlab/gitlab-runner:alpine3.15-v15.10.0
@@ -219,8 +210,6 @@ services:
       - /data/sonarqube/db/postgres:/data/postgres
     networks:
       - sonarqube
-    ports:
-      - 127.0.0.1:60660:5432
 
   sonarqube:
     image: sonarqube:9.9.0-community
@@ -228,21 +217,29 @@ services:
     hostname: 'sonarqube.daniderdak.local'
     restart: unless-stopped
     environment:
-      - SONAR_JDBC_URL=jdbc:postgresql://sonarqubedb:60660/sonar
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqubedb:5432/sonar
       - SONAR_JDBC_USERNAME=$SONARQUBE_DB_USER
       - SONAR_JDBC_PASSWORD=$SONARQUBE_DB_PASSWORD
     volumes:
-      - /data/sonarqube/data:/opt/sonarqube/data
-      - /data/sonarqube/extensions:/opt/sonarqube/extensions
-      - /data/sonarqube/logs:/opt/sonarqube/logs
+      - data_sonarqube_opt:/opt/sonarqube/data
+      - data_sonarqube_extensions:/opt/sonarqube/extensions
+      - data_sonarqube_logs:/opt/sonarqube/logs
     networks:
       - sonarqube
-      - nginx
     ports:
       - 127.0.0.1:6066:9000
     depends_on:
       - sonarqubedb
-      - nginx
+
+volumes:
+  data_pgadmin:
+    name: data_pgadmin
+  data_sonarqube_opt:
+    name: data_sonarqube_opt
+  data_sonarqube_extensions:
+    name: data_sonarqube_extensions
+  data_sonarqube_logs:
+    name: data_sonarqube_logs
 
 networks:
   portainer:
