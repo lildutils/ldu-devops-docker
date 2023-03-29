@@ -17,6 +17,7 @@ main() {
     FAIL2BAN_MAX_RETRY=3
     FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/resources/docker-compose.env
     FILE_DEVOPS_COMPOSE=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/resources/docker-compose.yml
+    FILE_DEVOPS_VSCODE_INSTALLER=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/resources/install-vscode.script
     FILE_DEVOPS_MAKE=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/make.sh
     INIFILENAME=make.ini
     MAKEFILENAME=$0
