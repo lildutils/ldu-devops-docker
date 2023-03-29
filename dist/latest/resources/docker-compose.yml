@@ -232,13 +232,13 @@ services:
       - sonarqubedb
 
 volumes:
-  pgadmin:
+  data_pgadmin:
     name: data_pgadmin
-  sonarqube_data:
+  data_sonarqube_opt:
     name: data_sonarqube_opt
-  sonarqube_extensions:
+  data_sonarqube_extensions:
     name: data_sonarqube_extensions
-  sonarqube_logs:
+  data_sonarqube_logs:
     name: data_sonarqube_logs
 
 networks:
