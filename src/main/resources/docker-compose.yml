@@ -114,10 +114,10 @@ services:
     restart: unless-stopped
     environment:
       - PASSWORD=$VSCODE_ROOT_PASSWORD
-      - SUDO_PASSWORD=$VSCODE_ROOT_SUDO_PASSWORD
-      - USER=$VSCODE_ROOT_SUDO_USER
-      - PGID=$VSCODE_ROOT_SUDO_PGID
-      - PUID=$VSCODE_ROOT_SUDO_PUID
+      - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
+      - USER=$VSCODE_SUDO_USER
+      - PGID=$VSCODE_SUDO_PGID
+      - PUID=$VSCODE_SUDO_PUID
       - DEFAULT_WORKSPACE=/works
       - TZ=Europe/Budapest
     volumes:
@@ -129,17 +129,38 @@ services:
     ports:
       - 127.0.0.1:6061:8443
 
+  nginxdb:
+    image: mysql:8-debian
+    container_name: nginxdb
+    hostname: 'nginxdb.daniderdak.local'
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_USER=root
+      - MYSQL_ROOT_PASSWORD=$NGINX_DB_PASSWORD
+      - MYSQL_USER=$NGINX_DB_USER
+      - MYSQL_PASSWORD=$NGINX_DB_PASSWORD
+      - MYSQL_DATABASE=proxymanager
+    volumes:
+      - /data/nginx/db:/var/lib/mysql
+    networks:
+      - nginx
+
   nginx:
     image: jc21/nginx-proxy-manager:2.10.0
     container_name: nginx
     hostname: 'proxy-manager.daniderdak.local'
     restart: unless-stopped
     environment:
-      - DISABLE_IPV6=false
-      - DB_SQLITE_FILE=/data/database.sqlite
+      - DISABLE_IPV6='false'
+      - PUID=$NGINX_SUDO_PUID
+      - PGID=$NGINX_SUDO_PGID
+      - DB_MYSQL_HOST="nginxdb"
+      - DB_MYSQL_PORT=3306
+      - DB_MYSQL_USER="$NGINX_DB_USER"
+      - DB_MYSQL_PASSWORD="$NGINX_DB_PASSWORD"
+      - DB_MYSQL_NAME=proxymanager
     volumes:
       - /data/nginx/data:/data
-      - /data/nginx/sqlite/database.sqlite:/data/database.sqlite
       - /data/nginx/letsencrypt:/etc/letsencrypt
     networks:
       - nginx
@@ -147,6 +168,8 @@ services:
       - 80:80
       - 443:443
       - 127.0.0.1:81:81
+    depends_on:
+      - nginxdb
 
   gitlab:
     image: gitlab/gitlab-ce:15.10.0-ce.0
