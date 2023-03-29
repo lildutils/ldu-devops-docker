@@ -34,6 +34,6 @@ backup() {
         fi
     done
 
-    _doGarbageCollect
+    _doDockerGarbageCollect
     _doTerminalClean
 }
