@@ -22,7 +22,7 @@ main() {
     INIFILENAME=make.ini
     MAKEFILENAME=$0
     UFW_ALLOW_IN=http,https,ssh
-    UFW_ALLOW_OUT=http,https,53/udp
+    UFW_ALLOW_OUT=http,https,53,631
 
     ## load docker environment if .env file exists
     if [ -f "$DIR_DEVOPS/.env" ]; then export $(cat "$DIR_DEVOPS/.env" | xargs); fi
