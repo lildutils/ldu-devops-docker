@@ -132,9 +132,6 @@ services:
       - /$VSCODE_WORKSPACE:/works
       - /var/run/docker.sock:/var/run/docker.sock
     networks:
-      - mongo
-      - mysql
-      - postgres
       - vscode
     ports:
       - 127.0.0.1:6061:8443
@@ -145,8 +142,8 @@ services:
     hostname: 'proxy-manager.daniderdak.local'
     restart: unless-stopped
     environment:
-      - DB_SQLITE_FILE=/data/database.sqlite
       - DISABLE_IPV6=false
+      - DB_SQLITE_FILE=/data/database.sqlite
     volumes:
       - /data/nginx/data:/data
       - /data/nginx/letsencrypt:/etc/letsencrypt
@@ -209,7 +206,7 @@ services:
 
   sonarqubedb:
     image: postgres:15-alpine
-    container_name: postgres
+    container_name: sonarqubedb
     hostname: 'sonarqubedb.daniderdak.local'
     restart: unless-stopped
     environment:
@@ -247,48 +244,6 @@ services:
       - sonarqubedb
       - nginx
 
-  registry:
-    image: registry:2.8.1
-    container_name: registry
-    hostname: 'registry.daniderdak.local'
-    restart: unless-stopped
-    environment:
-      - REGISTRY_HTTP_ADDR=0.0.0.0:443
-      - REGISTRY_AUTH=htpasswd
-      - REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd
-      - REGISTRY_AUTH_HTPASSWD_REALM=basic-realm
-    volumes:
-      - /data/registry/data:/var/lib/registry
-      - /data/registry/auth:/auth
-    networks:
-      - registry
-    ports:
-      - 127.0.0.1:6067:443
-
-  registryauth:
-    image: opensuse/portus:2.5
-    container_name: registryauth
-    hostname: 'registry-auth.daniderdak.local'
-    restart: unless-stopped
-    environment:
-    volumes:
-    networks:
-      - registry
-    ports:
-      - 127.0.0.1:1111:443
-
-  healthcheck:
-    image: linuxserver/healthchecks:2.7.20230324
-    container_name: healthcheck
-    hostname: 'healthcheck.daniderdak.local'
-    restart: unless-stopped
-    environment:
-    volumes:
-    networks:
-      - healthcheck
-    ports:
-      - 127.0.0.1:6069:80
-
 networks:
   portainer:
     name: portainer
@@ -306,7 +261,3 @@ networks:
     name: gitlab
   sonarqube:
     name: sonarqube
- registry:
-   name: registry
- healthcheck:
-   name: healthcheck
