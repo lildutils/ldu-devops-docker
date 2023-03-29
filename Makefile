@@ -82,7 +82,7 @@ compile-bin:
 
 .PHONY: compile-make
 compile-make:
-	((cp ./scripts/ldu-bash-compiler-1.0.0-SNAPSHOT.sh ./build/tmp/compiler.sh) && \
+	((cp ./lib/ldu-bash-compiler-1.0.0b.sh ./build/tmp/compiler.sh) && \
 	 (chmod 755 ./build/tmp/compiler.sh) && \
 	 (./build/tmp/compiler.sh "../make.sh") && \
 	 (chmod 755 ./build/make.sh) && \
