@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 
+## [0.3.0](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.3.0) (2023-03-29)
+
+- FEAT: Test Framework next steps
+- FEAT: Application compiler for make.sh script file
+- FEAT: Nginx docker compose service
+
 ## [0.2.0](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.2.0) (2023-03-28)
 
 - FEAT: Autorun for make.sh
