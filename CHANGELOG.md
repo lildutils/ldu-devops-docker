@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
 
+## [0.5.3](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.5.3) (2023-03-29)
+
+- CHORE: Manual deploy
+
 ## [0.5.2](https://github.com/lildutils/ldu-devops-docker/releases/tag/0.5.2) (2023-03-29)
 
 - FIX: Make file copy to devops
