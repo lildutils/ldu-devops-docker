@@ -22,6 +22,7 @@ main() {
     FAIL2BAN_MAX_RETRY=3
     FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/resources/docker-compose.env.example
     FILE_DEVOPS_COMPOSE=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/resources/docker-compose.yml
+    FILE_DEVOPS_MAKE=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/make.sh
     INIFILENAME=make.ini
     MAKEFILENAME=$0
     UFW_ALLOW_IN=http,https,ssh
@@ -78,13 +79,13 @@ backup() {
         fi
     done
 
-    _doGarbageCollect
+    _doDockerGarbageCollect
     _doTerminalClean
 }
 
 registerGitlabRunner() {
     _doRegisterGitlabRunner
-    _doGarbageCollect
+    _doDockerGarbageCollect
     _doTerminalClean
 }
 
@@ -119,7 +120,7 @@ install() {
 
     _doDockerComposeUp
 
-    _doGarbageCollect
+    _doDockerGarbageCollect
     _doTerminalClean
 }
 
@@ -129,7 +130,7 @@ clean() {
     _doRemoveFolder "$DEVOPS_DATA_DIR/"
     _doRemoveFolder "$BIN/$DEVOPS_ROOT_DIR/"
 
-    _doGarbageCollect
+    _doDockerGarbageCollect
     _doTerminalClean
 }
 
@@ -144,6 +145,16 @@ _doBackupDevOPS() {
 
     cp $DIR_DEVOPS/.env $currentBackupDir/docker-compose.env.backup
     cp $DIR_DEVOPS/docker-compose.yml $currentBackupDir/docker-compose.yml.backup
+}
+
+_doTerminalClean() {
+    read -s -n 1 -p "Press any key to continue..." && printf "\n"
+
+    rm -rf ~/.cache/ ~/.config/ ~/.docker/ ~/.gnupg/ ~/.local/ ~/.nano/ ~/.bash_history ~/.selected_editor ~/.sudo_as_admin_successful
+
+    history -c
+    clear
+
 }
 
 _doDockerGarbageCollect() {
@@ -242,7 +253,11 @@ _doInstallDevOps() {
 
     curl -sL "$FILE_DEVOPS_COMPOSE" -o $DIR_DEVOPS/docker-compose.yml
 
-    cp $CURRDIR/$MAKEFILENAME $DIR_DEVOPS/
+    if [ -f "$CURRDIR/$MAKEFILENAME" ]; then
+        cp $CURRDIR/$MAKEFILENAME $DIR_DEVOPS/
+    else
+        curl -sL "$FILE_DEVOPS_MAKE" -o $DIR_DEVOPS/$MAKEFILENAME
+    fi
 }
 
 _doBackupNginx() {
