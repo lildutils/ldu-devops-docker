@@ -12,6 +12,6 @@ install() {
 
     _doDockerComposeUp
 
-    _doGarbageCollect
+    _doDockerGarbageCollect
     _doTerminalClean
 }

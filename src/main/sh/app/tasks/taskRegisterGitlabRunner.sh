@@ -1,5 +1,5 @@
 registerGitlabRunner() {
     _doRegisterGitlabRunner
-    _doGarbageCollect
+    _doDockerGarbageCollect
     _doTerminalClean
 }
