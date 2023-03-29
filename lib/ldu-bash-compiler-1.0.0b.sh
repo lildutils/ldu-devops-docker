@@ -10,7 +10,7 @@ main() {
     /bin/sh $logger $(date +"%Y-%m-%d %H:%M:%S.%s") [ INFO] compile... "'$file'"
     start=$(date +%s)
     /bin/sh $logger $(date +"%Y-%m-%d %H:%M:%S.%s") [DEBUG] "'$bin/main.pre.sh'"
-    echo "$(cat $bin/main.pre.sh)" >>$file
+    echo "$(cat $bin/main.pre.sh)" >$file
     echo "" >>$file
     echo "####################" >>$file
     echo "# main" >>$file
