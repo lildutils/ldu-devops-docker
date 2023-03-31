@@ -55,19 +55,28 @@ build-others:
 
 .PHONY: build-dist
 build-dist:
-	((cp -r ./build/ ./dist/${VERSION}/) && \
+	((mkdir -p dist/) && \
+	 (cp -r ./build/ ./dist/${VERSION}/) && \
 	 (cp -r ./dist/${VERSION}/ ./dist/latest/))
 
 .PHONY: compile
-compile: compile-res compile-bin compile-make
+compile: compile-bin compile-res compile-examples compile-make
 
 .PHONY: compile-res
 compile-res:
 	((rm -rf ./build/resources/) && \
 	 (mkdir -p ./build/resources/) && \
-	 (find ./src/main/resources/ -name 'make.ini' -exec cp "{}" ./build/resources/make.ini \;) && \
-	 (find ./src/main/resources/ -name 'docker-compose.env' -exec cp "{}" ./build/resources/docker-compose.env \;) && \
-	 (find ./src/main/resources/ -name 'docker-compose.yml' -exec cp "{}" ./build/resources/docker-compose.yml \;))
+	 (rm -rf ./build/tmp/resources/) && \
+	 (mkdir -p ./build/tmp/resources/) && \
+	 (find ./src/main/resources/ -name 'docker-compose.env' -exec cp "{}" ./build/resources/ \;) && \
+	 (find ./src/main/resources/ -name 'docker-compose.*.yml' -exec cp "{}" ./build/tmp/resources/ \;))
+
+.PHONY: compile-examples
+compile-examples:
+	((rm -rf ./build/examples/) && \
+	 (mkdir -p ./build/examples/) && \
+	 (find ./src/main/sh/ -name 'main.ini' -exec cp "{}" ./build/examples/make.ini.example \;) && \
+	 (find ./src/main/resources/ -name '*.example' -exec cp "{}" ./build/examples/ \;))
 
 .PHONY: compile-bin
 compile-bin:
@@ -76,15 +85,13 @@ compile-bin:
 	 (find ./src/main/sh/app/commands/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
 	 (find ./src/main/sh/app/tasks/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
 	 (find ./src/main/sh/utils/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
-	 (find ./src/main/sh/ -name 'main.pre.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
-	 (find ./src/main/sh/ -name 'main.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
-	 (find ./src/main/sh/ -name 'main.post.sh' -exec cp "{}" ./build/tmp/bin/ \;))
+	 (find ./src/main/sh/ -name 'main.sh' -exec cp "{}" ./build/tmp/bin/ \;))
 
 .PHONY: compile-make
 compile-make:
-	((cp ./lib/ldu-bash-compiler-1.0.0b.sh ./build/tmp/compiler.sh) && \
+	((cp ./lib/ldu-devops-compiler/ldu-devops-compiler-1.0.0b.sh ./build/tmp/compiler.sh) && \
 	 (chmod 755 ./build/tmp/compiler.sh) && \
-	 (./build/tmp/compiler.sh "../make.sh") && \
+	 (./build/tmp/compiler.sh "../") && \
 	 (chmod 755 ./build/make.sh) && \
 	 (rm -rf ./build/tmp/))
 
@@ -101,7 +108,7 @@ unit-tests:
 	((chmod -R 755 ./src/test/sh/unit/*.sh) && \
 	 (/bin/bash ./src/test/sh/unit/run-all.sh ${test} ${args}))
 
-.PHONY: unit-e2e
+.PHONY: e2e-tests
 e2e-tests:
 	((chmod -R 755 ./src/test/sh/integration/*.sh) && \
 	 (/bin/bash ./src/test/sh/integration/run-all.sh ${test} ${args}))

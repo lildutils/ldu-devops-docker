@@ -1,0 +1,11 @@
+HEALTH_SUDO_USER=root@email
+HEALTH_SUDO_PASSWORD=password
+HEALTH_SUDO_PUID=$(id -u)
+HEALTH_SUDO_PGID=$(id -g)
+HEALTH_SITE_ROOT=http://localhost
+HEALTH_SITE_NAME=Status - Health Checker
+HEALTH_EMAIL_HOST=smtp.local.host
+HEALTH_EMAIL_PORT=465
+HEALTH_EMAIL_HOST_USER=smtp@email
+HEALTH_EMAIL_HOST_PASSWORD=password
+HEALTH_DEFAULT_FROM_EMAIL=noreply@smtp.domain.local

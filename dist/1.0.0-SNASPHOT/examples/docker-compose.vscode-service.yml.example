@@ -1,0 +1,22 @@
+##
+  vscode:
+    image: linuxserver/code-server:4.11.0
+    container_name: vscode
+    hostname: 'vscode'
+    restart: unless-stopped
+    environment:
+      - PASSWORD=$VSCODE_ROOT_PASSWORD
+      - SUDO_USER=$VSCODE_SUDO_USER
+      - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
+      - PGID=$VSCODE_SUDO_PGID
+      - PUID=$VSCODE_SUDO_PUID
+      - DEFAULT_WORKSPACE=/works
+      - TZ=Europe/Budapest
+    volumes:
+      - /data/vscode:/config
+      - /$VSCODE_WORKSPACE:/works
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - vscode
+    ports:
+      - 127.0.0.1:6061:8443

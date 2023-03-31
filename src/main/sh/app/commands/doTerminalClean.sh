@@ -5,5 +5,4 @@ _doTerminalClean() {
 
     history -c
     clear
-
 }

@@ -1,0 +1,15 @@
+##
+  nginx:
+    image: jc21/nginx-proxy-manager:2.10.0
+    container_name: nginx
+    hostname: 'proxy-manager.$DOMAIN'
+    restart: unless-stopped
+    volumes:
+      - /data/nginx/data:/data
+      - /data/nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - nginx
+    ports:
+      - 80:80
+      - 443:443
+      - 127.0.0.1:6068:81

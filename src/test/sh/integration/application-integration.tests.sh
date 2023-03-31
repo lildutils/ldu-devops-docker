@@ -1,14 +1,15 @@
 #!/bin/bash
 
 main() {
-    build=$(realpath $(dirname "${BASH_SOURCE[0]}")/../../../../build/)
+    cmd=$1
+    rootDir=$(realpath $(dirname "${BASH_SOURCE[0]}")/../../../../)
+    build=$(realpath $(dirname "${BASH_SOURCE[0]}")/../../../../build)
     runner=$build/make.sh
 
-    if [ "$1" = "" ] | [ "$1" = "all" ]; then
+    if [ "$cmd" = "" ]; then
         testCustomTask_ok
         testHelpTask_ok
     else
-        cmd=$1
         shift
         $cmd $*
     fi
@@ -21,6 +22,21 @@ testCustomTask_ok() {
 testHelpTask_ok() {
     /bin/bash $runner help
     /bin/bash $runner --help
+}
+
+#Disabled
+testDockerCompose_ok() {
+    rm -rf $rootDir/.tmp/
+    mkdir $rootDir/.tmp/
+
+    cp $build/resources/docker-compose.env $rootDir/.tmp/.env
+    cp $build/resources/docker-compose.yml $rootDir/.tmp/docker-compose.yml
+
+    nano $rootDir/.tmp/.env
+    docker-compose \
+        --file $rootDir/.tmp/docker-compose.yml \
+        --project-directory $rootDir/.tmp/ \
+        up -d
 }
 
 main $*

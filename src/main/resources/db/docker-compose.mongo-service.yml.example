@@ -1,0 +1,30 @@
+##
+  mongodb:
+    image: mongo:4-focal
+    container_name: mongodb
+    hostname: 'mongodb'
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_ROOT_USER
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD
+    volumes:
+      - /data/mongo/db:/data/db
+      - /data/mongo/config:/data/configdb
+    networks:
+      - mongo
+
+  mongoxpress:
+    image: mongo-express:1.0.0-alpha
+    container_name: mongoxpress
+    hostname: 'mongoxpress'
+    restart: unless-stopped
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=$MONGO_ROOT_USER
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=$MONGO_ROOT_PASSWORD
+      - ME_CONFIG_MONGODB_URL=mongodb://$MONGO_ROOT_USER:$MONGO_ROOT_PASSWORD@mongodb:27017/
+    networks:
+      - mongo
+    ports:
+      - 127.0.0.1:6064:8081
+    depends_on:
+      - mongodb

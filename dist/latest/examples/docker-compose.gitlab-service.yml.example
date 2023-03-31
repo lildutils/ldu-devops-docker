@@ -1,0 +1,47 @@
+##
+  gitlab:
+    image: gitlab/gitlab-ce:15.10.0-ce.0
+    container_name: gitlab
+    hostname: 'gitlab'
+    restart: unless-stopped
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url '$GITLAB_EXTERNAL_URL'
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        letsencrypt['enable'] = false
+        gitlab_rails['trusted_proxies'] = ["localhost", "$GITLAB_EXTERNAL_DOMAIN"]
+        gitlab_rails['smtp_enable'] = $GITLAB_SMTP_ENABLED
+        gitlab_rails['smtp_address'] = "$GITLAB_SMTP_SERVER"
+        gitlab_rails['smtp_port'] = $GITLAB_SMTP_PORT
+        gitlab_rails['smtp_user_name'] = "$GITLAB_SMTP_USER"
+        gitlab_rails['smtp_password'] = "$GITLAB_SMTP_PASSWORD"
+        gitlab_rails['smtp_domain'] = "$GITLAB_SMTP_DOMAIN"
+        gitlab_rails['gitlab_email_from'] = '$GITLAB_SMTP_FROM'
+        gitlab_rails['gitlab_email_reply_to'] = '$GITLAB_SMTP_REPLY'
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_ssl'] = true
+    volumes:
+      - /data/gitlab/conf:/etc/gitlab
+      - /data/gitlab/data:/var/opt/gitlab
+      - /data/gitlab/logs:/var/log/gitlab
+    networks:
+      - gitlab
+    ports:
+      - 127.0.0.1:6065:80
+
+  gitlabrunner:
+    image: gitlab/gitlab-runner:alpine3.15-v15.10.0
+    container_name: gitlabrunner
+    hostname: 'gitlab-runner'
+    restart: unless-stopped
+    environment:
+      - CI_SERVER_URL=http://gitlab
+    volumes:
+      - /data/gitlab/runner/data:/etc/gitlab-runner
+      - /data/gitlab/runner/home:/home/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitlab
+    depends_on:
+      - gitlab

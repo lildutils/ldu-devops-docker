@@ -73,24 +73,25 @@ Services is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing el
 
 ### *List of Docker Compose Services*
 
-| **Service**  | **Image**                                |
-|:-------------|:-----------------------------------------|
-| portainer    | portainer/portainer-ce:2.17.1-alpine     |
-| mongodb      | mongo:4-focal                            |
-| mongoxpress  | mongo-express:1.0.0-alpha                |
-| mysql        | mysql:8-debian                           |
-| phpmyadmin   | phpmyadmin:5.2.1-apache                  |
-| postgres     | postgres:15-alpine                       |
-| pgadmin      | dpage/pgadmin4:6.21                      |
-| vscode       | linuxserver/code-server:4.11.0           |
-| nginx        | jc21/nginx-proxy-manager:2.10.0          |
-| gitlab       | gitlab/gitlab-ce:15.10.0-ce.0            |
-| gitlabrunner | gitlab/gitlab-runner:alpine3.15-v15.10.0 |
-| sonarqubedb  | postgres:15-alpine                       |
-| sonarqube    | sonarqube:9.9.0-community                |
-| registry     | registry:2.8.1                           |
-| registryauth | opensuse/portus:2.5                      |
-| healthcheck  | linuxserver/healthchecks:2.7.20230324    |
+|     | **Service**  | **Image**                                | **Port(s)** |
+|----:|:-------------|:-----------------------------------------|------------:|
+|   1 | portainer    | portainer/portainer-ce:2.17.1-alpine     |        6067 |
+|   2 | mongodb      | mongo:4-focal                            |       27017 |
+|   3 | mongoxpress  | mongo-express:1.0.0-alpha                |        6064 |
+|   4 | mysql        | mysql:8-debian                           |  3306,33060 |
+|   5 | phpmyadmin   | phpmyadmin:5.2.1-apache                  |        6062 |
+|   6 | postgres     | postgres:15-alpine                       |        5432 |
+|   7 | pgadmin      | dpage/pgadmin4:6.21                      |        6063 |
+|   8 | vscode       | linuxserver/code-server:4.11.0           |        6061 |
+|   9 | nginxdb      | mysql:8-debian                           |  3306,33060 |
+|  10 | nginx        | jc21/nginx-proxy-manager:2.10.0          |   80,81,443 |
+|  11 | gitlab       | gitlab/gitlab-ce:15.10.0-ce.0            |        6065 |
+|  12 | gitlabrunner | gitlab/gitlab-runner:alpine3.15-v15.10.0 |           - |
+|  13 | sonarqubedb  | postgres:15-alpine                       |        5432 |
+|  14 | sonarqube    | sonarqube:9.9.0-community                |        6066 |
+|  15 | registry     | registry:2.8.1                           |         443 |
+|  16 | registryauth | opensuse/portus:2.5                      |         443 |
+|  17 | healthcheck  | linuxserver/healthchecks:2.7.20230324    |        6068 |
 
 ### Auto-Install
 
@@ -163,8 +164,6 @@ POSTGRES_PGADMIN_USER=useremail
 POSTGRES_PGADMIN_PASSWORD=password
 NGINX_DB_USER=username
 NGINX_DB_PASSWORD=password
-NGINX_SUDO_PGID=$(id -u)
-NGINX_SUDO_PUID=$(id -g)
 REGISTRY_ROOT_USER=username
 REGISTRY_ROOT_PASSWORD=password
 SONARQUBE_ROOT_USER=username
