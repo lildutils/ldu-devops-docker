@@ -2,7 +2,7 @@
   postgres:
     image: postgres:15-alpine
     container_name: postgres
-    hostname: 'postgres'
+    hostname: 'postgres.$DOMAIN'
     restart: unless-stopped
     environment:
       - PGDATA=/data/postgres
@@ -17,7 +17,7 @@
   pgadmin:
     image: dpage/pgadmin4:6.21
     container_name: pgadmin
-    hostname: 'pgadmin'
+    hostname: 'pgadmin.$DOMAIN'
     restart: unless-stopped
     environment:
       - PGADMIN_DEFAULT_EMAIL=$POSTGRES_PGADMIN_USER
@@ -25,6 +25,6 @@
     networks:
       - postgres
     ports:
-      - 127.0.0.1:6063:80
+      - 127.0.0.1:6065:8081
     depends_on:
       - postgres

@@ -2,7 +2,7 @@
   gitlab:
     image: gitlab/gitlab-ce:15.10.0-ce.0
     container_name: gitlab
-    hostname: 'gitlab'
+    hostname: 'gitlab.$DOMAIN'
     restart: unless-stopped
     environment:
       GITLAB_OMNIBUS_CONFIG: |
@@ -27,13 +27,11 @@
       - /data/gitlab/logs:/var/log/gitlab
     networks:
       - gitlab
-    ports:
-      - 127.0.0.1:6065:80
 
   gitlabrunner:
     image: gitlab/gitlab-runner:alpine3.15-v15.10.0
     container_name: gitlabrunner
-    hostname: 'gitlab-runner'
+    hostname: 'gitlab-runner.$DOMAIN'
     restart: unless-stopped
     environment:
       - CI_SERVER_URL=http://gitlab

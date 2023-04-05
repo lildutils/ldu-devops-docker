@@ -2,7 +2,7 @@
   mysql:
     image: mysql:8-debian
     container_name: mysql
-    hostname: 'mysql'
+    hostname: 'mysql.$DOMAIN'
     restart: unless-stopped
     environment:
       - MYSQL_ROOT_USER=$MYSQL_ROOT_USER
@@ -15,7 +15,7 @@
   phpmyadmin:
     image: phpmyadmin:5.2.1-apache
     container_name: phpmyadmin
-    hostname: 'phpmyadmin'
+    hostname: 'phpmyadmin.$DOMAIN'
     restart: unless-stopped
     environment:
       - PMA_HOST=mysql
@@ -23,6 +23,6 @@
     networks:
       - mysql
     ports:
-      - 127.0.0.1:6062:80
+      - 127.0.0.1:6064:8081
     depends_on:
       - mysql

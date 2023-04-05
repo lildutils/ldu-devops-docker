@@ -30,7 +30,5 @@
       - data_sonarqube_logs:/opt/sonarqube/logs
     networks:
       - sonarqube
-    ports:
-      - 127.0.0.1:6066:9000
     depends_on:
       - sonarqubedb
