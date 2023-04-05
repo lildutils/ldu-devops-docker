@@ -10,7 +10,9 @@ install() {
         _doInstallCron "$mode"
     done
 
-    _doDockerComposeUp
+    for service in ${DEVOPS_SERVICES//,/ }; do
+        _doDockerComposeUp "$service"
+    done
 
     _doDockerGarbageCollect
     _doTerminalClean

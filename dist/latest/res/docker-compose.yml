@@ -1,0 +1,259 @@
+####################
+version: "3"
+
+####################
+services:
+##
+  mysql:
+    image: mysql:8-debian
+    container_name: mysql
+    hostname: 'mysql.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_USER=$MYSQL_ROOT_USER
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+    volumes:
+      - /data/mysql/db:/var/lib/mysql
+    networks:
+      - mysql
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1-apache
+    container_name: phpmyadmin
+    hostname: 'phpmyadmin.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+    networks:
+      - mysql
+    ports:
+      - 127.0.0.1:6064:8081
+    depends_on:
+      - mysql
+##
+  portainer:
+    image: portainer/portainer-ce:2.17.1-alpine
+    container_name: portainer
+    hostname: 'portainer.$DOMAIN'
+    restart: unless-stopped
+    volumes:
+      - /data/portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - portainer
+    ports:
+      - 127.0.0.1:6062:9000
+##
+  mongodb:
+    image: mongo:4-focal
+    container_name: mongodb
+    hostname: 'mongodb.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_ROOT_USER
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD
+    volumes:
+      - /data/mongo/db:/data/db
+      - /data/mongo/config:/data/configdb
+    networks:
+      - mongo
+
+  mongoxpress:
+    image: mongo-express:1.0.0-alpha
+    container_name: mongoxpress
+    hostname: 'mongoxpress.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=$MONGO_ROOT_USER
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=$MONGO_ROOT_PASSWORD
+      - ME_CONFIG_MONGODB_URL=mongodb://$MONGO_ROOT_USER:$MONGO_ROOT_PASSWORD@mongodb:27017/
+    networks:
+      - mongo
+    ports:
+      - 127.0.0.1:6066:8081
+    depends_on:
+      - mongodb
+##
+  nginx:
+    image: jc21/nginx-proxy-manager:2.10.0
+    container_name: nginx
+    hostname: 'proxy-manager.$DOMAIN'
+    restart: unless-stopped
+    volumes:
+      - /data/nginx/data:/data
+      - /data/nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - nginx
+    ports:
+      - 80:80
+      - 443:443
+      - 127.0.0.1:6061:81
+##
+  vscode:
+    image: linuxserver/code-server:4.11.0
+    container_name: vscode
+    hostname: 'vscode'
+    restart: unless-stopped
+    environment:
+      - PASSWORD=$VSCODE_ROOT_PASSWORD
+      - SUDO_USER=$VSCODE_SUDO_USER
+      - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
+      - PGID=$VSCODE_SUDO_PGID
+      - PUID=$VSCODE_SUDO_PUID
+      - DEFAULT_WORKSPACE=/works
+      - TZ=Europe/Budapest
+    volumes:
+      - /data/vscode:/config
+      - /$VSCODE_WORKSPACE:/works
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - vscode
+    ports:
+      - 127.0.0.1:6063:8443
+##
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    hostname: 'postgres.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - PGDATA=/data/postgres
+      - POSTGRES_USER=$POSTGRES_ROOT_USER
+      - POSTGRES_PASSWORD=$POSTGRES_ROOT_PASSWORD
+    volumes:
+      - /data/postgres/data:/var/lib/postgresql/data
+      - /data/postgres/db:/data/postgres
+    networks:
+      - postgres
+
+  pgadmin:
+    image: dpage/pgadmin4:6.21
+    container_name: pgadmin
+    hostname: 'pgadmin.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=$POSTGRES_PGADMIN_USER
+      - PGADMIN_DEFAULT_PASSWORD=$POSTGRES_PGADMIN_PASSWORD
+    networks:
+      - postgres
+    ports:
+      - 127.0.0.1:6065:8081
+    depends_on:
+      - postgres
+##
+  gitlab:
+    image: gitlab/gitlab-ce:15.10.0-ce.0
+    container_name: gitlab
+    hostname: 'gitlab.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      GITLAB_OMNIBUS_CONFIG: |
+        external_url '$GITLAB_EXTERNAL_URL'
+        nginx['listen_port'] = 80
+        nginx['listen_https'] = false
+        letsencrypt['enable'] = false
+        gitlab_rails['trusted_proxies'] = ["localhost", "$GITLAB_EXTERNAL_DOMAIN"]
+        gitlab_rails['smtp_enable'] = $GITLAB_SMTP_ENABLED
+        gitlab_rails['smtp_address'] = "$GITLAB_SMTP_SERVER"
+        gitlab_rails['smtp_port'] = $GITLAB_SMTP_PORT
+        gitlab_rails['smtp_user_name'] = "$GITLAB_SMTP_USER"
+        gitlab_rails['smtp_password'] = "$GITLAB_SMTP_PASSWORD"
+        gitlab_rails['smtp_domain'] = "$GITLAB_SMTP_DOMAIN"
+        gitlab_rails['gitlab_email_from'] = '$GITLAB_SMTP_FROM'
+        gitlab_rails['gitlab_email_reply_to'] = '$GITLAB_SMTP_REPLY'
+        gitlab_rails['smtp_authentication'] = "login"
+        gitlab_rails['smtp_ssl'] = true
+    volumes:
+      - /data/gitlab/conf:/etc/gitlab
+      - /data/gitlab/data:/var/opt/gitlab
+      - /data/gitlab/logs:/var/log/gitlab
+    networks:
+      - gitlab
+
+  gitlabrunner:
+    image: gitlab/gitlab-runner:alpine3.15-v15.10.0
+    container_name: gitlabrunner
+    hostname: 'gitlab-runner.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - CI_SERVER_URL=http://gitlab
+    volumes:
+      - /data/gitlab/runner/data:/etc/gitlab-runner
+      - /data/gitlab/runner/home:/home/gitlab-runner
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - gitlab
+    depends_on:
+      - gitlab
+##
+  sonarqubedb:
+    image: postgres:15-alpine
+    container_name: sonarqubedb
+    hostname: 'sonarqubedb'
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DATABASE=sonar
+      - POSTGRES_USER=$SONARQUBE_DB_USER
+      - POSTGRES_PASSWORD=$SONARQUBE_DB_PASSWORD
+      - PGDATA=/data/postgres
+    volumes:
+      - /data/sonarqube/db/data:/var/lib/postgresql/data
+      - /data/sonarqube/db/postgres:/data/postgres
+    networks:
+      - sonarqube
+
+  sonarqube:
+    image: sonarqube:9.9.0-community
+    container_name: sonarqube
+    hostname: 'sonarqube'
+    restart: unless-stopped
+    environment:
+      - SONAR_JDBC_URL=jdbc:postgresql://sonarqubedb:5432/sonar
+      - SONAR_JDBC_USERNAME=$SONARQUBE_DB_USER
+      - SONAR_JDBC_PASSWORD=$SONARQUBE_DB_PASSWORD
+    volumes:
+      - data_sonarqube_opt:/opt/sonarqube/data
+      - data_sonarqube_extensions:/opt/sonarqube/extensions
+      - data_sonarqube_logs:/opt/sonarqube/logs
+    networks:
+      - sonarqube
+    depends_on:
+      - sonarqubedb
+
+####################
+volumes:
+##
+  data_sonarqube_opt:
+    name: data_sonarqube_opt
+  data_sonarqube_extensions:
+    name: data_sonarqube_extensions
+  data_sonarqube_logs:
+    name: data_sonarqube_logs
+
+####################
+networks:
+##
+  nginx:
+    name: nginx
+##
+  postgres:
+    name: postgres
+##
+  gitlab:
+    name: gitlab
+##
+  sonarqube:
+    name: sonarqube
+##
+  mongo:
+    name: mongo
+##
+  vscode:
+    name: vscode
+##
+  mysql:
+    name: mysql
+##
+  portainer:
+    name: portainer

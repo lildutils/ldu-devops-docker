@@ -4,7 +4,7 @@ _doInstallCron() {
     if [ "$1" == "monthly" ]; then scheduler='0 6 1 * *'; fi
 
     crontab -l >cronjobs
-    echo "$scheduler $DIR_DEVOPS/$MAKEFILENAME.sh backup>/dev/null 2>&1" >>cronjobs
+    echo "$scheduler $DIR_DEVOPS/$CURRFILE.sh backup>/dev/null 2>&1" >>cronjobs
     crontab cronjobs
     rm cronjobs
     crontab -l

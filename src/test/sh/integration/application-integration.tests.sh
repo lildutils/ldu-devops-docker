@@ -29,8 +29,8 @@ testDockerCompose_ok() {
     rm -rf $rootDir/.tmp/
     mkdir $rootDir/.tmp/
 
-    cp $build/resources/docker-compose.env $rootDir/.tmp/.env
-    cp $build/resources/docker-compose.yml $rootDir/.tmp/docker-compose.yml
+    cp $build/res/docker-compose.env $rootDir/.tmp/.env
+    cp $build/res/docker-compose.yml $rootDir/.tmp/docker-compose.yml
 
     nano $rootDir/.tmp/.env
     docker-compose \

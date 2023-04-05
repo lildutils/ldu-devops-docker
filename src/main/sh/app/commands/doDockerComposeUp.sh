@@ -1,8 +1,14 @@
 _doDockerComposeUp() {
+    $dockerComposeFile=docker-compose.yml
+    $dockerComposeService=$1
+
     docker-compose \
-        --project-name devops \
+        --project-name $dockerComposeService \
         --project-directory $DIR_DEVOPS \
-        --file $DIR_DEVOPS/docker-compose.yml \
-        up -d \
-        --remove-orphans
+        --file $DIR_DEVOPS/$dockerComposeFile \
+        up -d $dockerComposeService
+
+    if [ "$dockerComposeService" = "vscode" ]; then
+        _doDockerComposeUpPostInstallVSCode
+    fi
 }
