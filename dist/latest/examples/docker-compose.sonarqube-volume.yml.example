@@ -1,7 +1,0 @@
-##
-  data_sonarqube_opt:
-    name: data_sonarqube_opt
-  data_sonarqube_extensions:
-    name: data_sonarqube_extensions
-  data_sonarqube_logs:
-    name: data_sonarqube_logs
