@@ -18,7 +18,9 @@ main() {
 }
 
 _logDebug() {
-    /bin/sh $logger logDebug $*
+    if [ "$DEBUG_MODE" = "TRUE" ]; then
+        /bin/sh $logger logDebug $*
+    fi
 }
 
 _logInfo() {
@@ -107,7 +109,7 @@ _compileComposeEnv() {
 }
 
 _compileComposeFile() {
-    _logInfo compile... composefile
+    _logInfo compile... compose file
     start=$(date +%s)
 
     _logDebug compile file: "'$composeFile'" create

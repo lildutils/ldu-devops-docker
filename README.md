@@ -75,23 +75,19 @@ Services is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing el
 
 |     | **Service**  | **Image**                                | **Port(s)** |
 |----:|:-------------|:-----------------------------------------|------------:|
-|   1 | portainer    | portainer/portainer-ce:2.17.1-alpine     |        6067 |
-|   2 | mongodb      | mongo:4-focal                            |       27017 |
-|   3 | mongoxpress  | mongo-express:1.0.0-alpha                |        6064 |
+|   1 | nginx        | jc21/nginx-proxy-manager:2.10.0          | 80,443,6061 |
+|   2 | portainer    | portainer/portainer-ce:2.17.1-alpine     |        6062 |
+|   3 | vscode       | linuxserver/code-server:4.11.0           |        6063 |
 |   4 | mysql        | mysql:8-debian                           |  3306,33060 |
-|   5 | phpmyadmin   | phpmyadmin:5.2.1-apache                  |        6062 |
+|   5 | phpmyadmin   | phpmyadmin:5.2.1-apache                  |        6064 |
 |   6 | postgres     | postgres:15-alpine                       |        5432 |
-|   7 | pgadmin      | dpage/pgadmin4:6.21                      |        6063 |
-|   8 | vscode       | linuxserver/code-server:4.11.0           |        6061 |
-|   9 | nginxdb      | mysql:8-debian                           |  3306,33060 |
-|  10 | nginx        | jc21/nginx-proxy-manager:2.10.0          |   80,81,443 |
-|  11 | gitlab       | gitlab/gitlab-ce:15.10.0-ce.0            |        6065 |
-|  12 | gitlabrunner | gitlab/gitlab-runner:alpine3.15-v15.10.0 |           - |
-|  13 | sonarqubedb  | postgres:15-alpine                       |        5432 |
-|  14 | sonarqube    | sonarqube:9.9.0-community                |        6066 |
-|  15 | registry     | registry:2.8.1                           |         443 |
-|  16 | registryauth | opensuse/portus:2.5                      |         443 |
-|  17 | healthcheck  | linuxserver/healthchecks:2.7.20230324    |        6068 |
+|   7 | pgadmin      | dpage/pgadmin4:6.21                      |        6065 |
+|   8 | mongodb      | mongo:4-focal                            |       27017 |
+|   9 | mongoxpress  | mongo-express:1.0.0-alpha                |        6066 |
+|  10 | gitlab       | gitlab/gitlab-ce:15.10.0-ce.0            |          80 |
+|  11 | gitlabrunner | gitlab/gitlab-runner:alpine3.15-v15.10.0 |           - |
+|  12 | sonarqubedb  | postgres:15-alpine                       |        5432 |
+|  13 | sonarqube    | sonarqube:9.9.0-community                |        9000 |
 
 ### Auto-Install
 
@@ -118,32 +114,31 @@ Configurations is Coming soon... Lorem ipsum dolor sit amet, consectetur adipisc
 Application Configurations is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 ``` ini
-CURRDIR=current directory path of makefile
-CRON_BACKUP_MODES=comma separated list of: daily | weekly | monthly
+CRON_BACKUP_INSTANCES=comma separated list of: devops,portainer,nginx,vscode,mysql,postgres,mongodb,gitlab,sonarqube
+CRON_BACKUP_MODES=comma separated list of: daily,weekly,monthly
+DEBUG_MODE=showing debug informations: TRUE|FALSE
 DIR_DEVOPS=devops directory path
 DIR_DEVOPS_BACKUPS=backups directory path
 DIR_DEVOPS_DATA=data directory path
-DOCKER_INIT_DB_CLIENTS=comma separated list of: phpmyadmin | pgadmin | mongoxpress
 FAIL2BAN_MAX_RETRY=integer value to maximalize the login retries
 FILE_DEVOPS_ENV=url to auto-download docker-compose .env file
 FILE_DEVOPS_COMPOSE=url to auto-download docker-compose .yml file
 FILE_DEVOPS_MAKE=url to auto-download makefile
-GITLAB_RUNNER_REGISTRATION_TOKEN=registration-token from gitlab
-INIFILENAME=.ini filename of the makefile
-MAKEFILENAME=.sh filename of the makefile
-UFW_ALLOW_IN=comma separated list of: http | https | ssh
-UFW_ALLOW_OUT=comma separated list of: http | https | 53/udp
+UFW_ALLOW_IN=comma separated list of ports (f.e.: 80,443,22)
+UFW_ALLOW_OUT=comma separated list of ports (f.e.: 80,443,53,631)
 ```
 
 #### Docker Compose Services
 
 Docker Compose Service Configurations is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
-``` sh
+``` env
+DOMAIN=domain name of the server
 GITLAB_ROOT_USER=username
 GITLAB_ROOT_PASSWORD=password
 GITLAB_EXTERNAL_URL=http(s) schema url of the gitlab service
 GITLAB_EXTERNAL_DOMAIN=only domain name of the gitlab service
+GITLAB_RUNNER_REGISTRATION_TOKEN=runner registration token of gitlab service
 GITLAB_SMTP_ENABLED=true|false, if true the smpt server is enabled in gitlab service
 GITLAB_SMTP_SERVER=smtp server domain
 GITLAB_SMTP_PORT=465|587|25
@@ -156,27 +151,25 @@ MONGO_ROOT_USER=username
 MONGO_ROOT_PASSWORD=password
 MYSQL_ROOT_USER=username
 MYSQL_ROOT_PASSWORD=password
+NGINX_ROOT_USER=admin@example.com
+NGINX_ROOT_PASSWORD=changeme
 PORTAINER_ROOT_USER=username
 PORTAINER_ROOT_PASSWORD=password
 POSTGRES_ROOT_USER=username
 POSTGRES_ROOT_PASSWORD=password
 POSTGRES_PGADMIN_USER=useremail
 POSTGRES_PGADMIN_PASSWORD=password
-NGINX_DB_USER=username
-NGINX_DB_PASSWORD=password
-REGISTRY_ROOT_USER=username
-REGISTRY_ROOT_PASSWORD=password
-SONARQUBE_ROOT_USER=username
-SONARQUBE_ROOT_PASSWORD=password
-SONARQUBE_DB_USER=username
+SONARQUBE_ROOT_USER=admin
+SONARQUBE_ROOT_PASSWORD=admin
+SONARQUBE_DB_USER=sonar
 SONARQUBE_DB_PASSWORD=password
 VSCODE_ROOT_USER=username
 VSCODE_ROOT_PASSWORD=password
 VSCODE_SUDO_USER=username
 VSCODE_SUDO_PASSWORD=password
-VSCODE_SUDO_PGID=usergroup
-VSCODE_SUDO_PUID=usergroup
-VSCODE_WORKSPACE=path of the home directory
+VSCODE_SUDO_PUID=user id
+VSCODE_SUDO_PGID=group id
+VSCODE_WORKSPACE=path of the user home directory
 ```
 
 ### Usage
@@ -185,6 +178,14 @@ Usage is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing elit,
 
 ``` sh
 /path/to/make.sh --help
+```
+
+### LDT compatibility
+
+LDT compatibility is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. 
+
+``` sh
+ldt devops --help
 ```
 
 ---
