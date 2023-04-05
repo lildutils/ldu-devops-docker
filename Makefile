@@ -1,8 +1,11 @@
 .PHONY: clean
 clean: clean-latest clean-version clean-snapshot clean-alpha clean-beta clean-build
 
+.PHONY: compile
+compile: compile-lib compile-bin compile-res compile-app
+
 .PHONY: build
-build: compile build-others build-dist
+build: compile copy-others copy-dist
 
 .PHONY: watch
 watch: watch-src
@@ -15,13 +18,8 @@ e2e: clean build e2e-tests
 
 #######################################################################
 ## Tasks
-
-### current version number
+##
 VERSION := $(shell cat VERSION)
-### watcher in seconds
-WATCHER := 2
-### watcher mode: debug | silent
-mode    := silent
 
 .PHONY: clean-build
 clean-build:
@@ -47,36 +45,26 @@ clean-beta:
 clean-version:
 	(rm -rf ./dist/${VERSION}/)
 
-.PHONY: build-others
-build-others:
+.PHONY: copy-others
+copy-others:
 	((cp ./LICENSE ./build/) && \
 	 (cp ./src/main/resources/README.txt ./build/) && \
 	 (cp ./VERSION ./build/))
 
-.PHONY: build-dist
-build-dist:
+.PHONY: copy-dist
+copy-dist:
 	((mkdir -p dist/) && \
 	 (cp -r ./build/ ./dist/${VERSION}/) && \
-	 (cp -r ./dist/${VERSION}/ ./dist/latest/))
+	 (cp -r ./build/ ./dist/latest/))
 
-.PHONY: compile
-compile: compile-bin compile-res compile-examples compile-make
-
-.PHONY: compile-res
-compile-res:
-	((rm -rf ./build/resources/) && \
-	 (mkdir -p ./build/resources/) && \
-	 (rm -rf ./build/tmp/resources/) && \
-	 (mkdir -p ./build/tmp/resources/) && \
-	 (find ./src/main/resources/ -name 'docker-compose.env' -exec cp "{}" ./build/resources/ \;) && \
-	 (find ./src/main/resources/ -name 'docker-compose.*.yml' -exec cp "{}" ./build/tmp/resources/ \;))
-
-.PHONY: compile-examples
-compile-examples:
-	((rm -rf ./build/examples/) && \
-	 (mkdir -p ./build/examples/) && \
-	 (find ./src/main/sh/ -name 'main.ini' -exec cp "{}" ./build/examples/make.ini.example \;) && \
-	 (find ./src/main/resources/ -name '*.example' -exec cp "{}" ./build/examples/ \;))
+.PHONY: compile-lib
+compile-lib:
+	((rm -rf ./build/lib/) && \
+	 (mkdir -p ./build/lib/) && \
+	 (cp ./lib/ldu-devops-compiler/ldu-devops-compiler-1.0.0b.sh ./build/compiler.sh) && \
+	 (chmod 755 ./build/compiler.sh) && \
+	 (cp ./lib/ldu-devops-logger/ldu-devops-logger-1.0.0b.sh ./build/lib/logger.sh) && \
+	 (chmod 755 ./build/lib/logger.sh))
 
 .PHONY: compile-bin
 compile-bin:
@@ -84,24 +72,29 @@ compile-bin:
 	 (mkdir -p ./build/tmp/bin/) && \
 	 (find ./src/main/sh/app/commands/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
 	 (find ./src/main/sh/app/tasks/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
-	 (find ./src/main/sh/utils/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
 	 (find ./src/main/sh/ -name 'main.sh' -exec cp "{}" ./build/tmp/bin/ \;))
 
-.PHONY: compile-make
-compile-make:
-	((cp ./lib/ldu-devops-compiler/ldu-devops-compiler-1.0.0b.sh ./build/tmp/compiler.sh) && \
-	 (chmod 755 ./build/tmp/compiler.sh) && \
-	 (./build/tmp/compiler.sh "../") && \
+.PHONY: compile-res
+compile-res:
+	((rm -rf ./build/res/) && \
+	 (mkdir -p ./build/res/) && \
+	 (rm -rf ./build/tmp/resources/) && \
+	 (mkdir -p ./build/tmp/resources/) && \
+	 (find ./src/main/resources/ -name 'docker-compose.*.env' -exec cp "{}" ./build/tmp/resources/ \;) && \
+	 (find ./src/main/resources/ -name 'docker-compose.*.yml' -exec cp "{}" ./build/tmp/resources/ \;) && \
+	 (find ./src/main/resources/ -name 'default-environment.ini' -exec cp "{}" ./build/tmp/resources/ \;))
+
+.PHONY: compile-app
+compile-app:
+	((./build/compiler.sh) && \
 	 (chmod 755 ./build/make.sh) && \
-	 (rm -rf ./build/tmp/))
+	 (rm -rf ./build/tmp/) && \
+	 (rm -rf ./build/compiler.sh))
 
 .PHONY: watch-src
 watch-src:
-	(if [ "${mode}" = "silent" ]; then \
-		watch -n ${WATCHER} make compile --silent; \
-	 else \
-		watch -n ${WATCHER} make compile; \
-	 fi)
+	((echo Watching sources folder...) && \
+	 (while inotifywait -q -r -e modify,move,create,delete ./src/ >/dev/null; do make compile --silent; done;))
 
 .PHONY: unit-tests
 unit-tests:
@@ -112,6 +105,9 @@ unit-tests:
 e2e-tests:
 	((chmod -R 755 ./src/test/sh/integration/*.sh) && \
 	 (/bin/bash ./src/test/sh/integration/run-all.sh ${test} ${args}))
+
+#######################################################################
+## Release
 
 .PHONY: release
 release:
