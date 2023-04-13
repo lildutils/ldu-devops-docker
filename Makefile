@@ -1,5 +1,5 @@
 .PHONY: clean
-clean: clean-latest clean-version clean-snapshot clean-alpha clean-beta clean-build
+clean: clean-latest clean-version clean-snapshot clean-alpha clean-beta clean-build clean-test
 
 .PHONY: compile
 compile: compile-lib compile-bin compile-res compile-app
@@ -24,6 +24,10 @@ VERSION := $(shell cat VERSION)
 .PHONY: clean-build
 clean-build:
 	(rm -rf ./build/)
+
+.PHONY: clean-test
+clean-test:
+	(rm -rf ./.tmp/)
 
 .PHONY: clean-latest
 clean-latest:
@@ -68,21 +72,27 @@ compile-lib:
 
 .PHONY: compile-bin
 compile-bin:
-	((rm -rf ./build/tmp/bin/) && \
+	((rm -rf ./build/bin/) && \
+	 (mkdir -p ./build/bin/) && \
+	 (rm -rf ./build/tmp/bin/) && \
 	 (mkdir -p ./build/tmp/bin/) && \
 	 (find ./src/main/sh/app/commands/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
 	 (find ./src/main/sh/app/tasks/ -name '*.sh' -exec cp "{}" ./build/tmp/bin/ \;) && \
+	 (find ./src/main/sh/scripts/ -name '*.script' -exec cp "{}" ./build/bin/ \;) && \
 	 (find ./src/main/sh/ -name 'main.sh' -exec cp "{}" ./build/tmp/bin/ \;))
 
 .PHONY: compile-res
 compile-res:
 	((rm -rf ./build/res/) && \
 	 (mkdir -p ./build/res/) && \
+	 (rm -rf ./build/examples/) && \
+	 (mkdir -p ./build/examples/) && \
 	 (rm -rf ./build/tmp/resources/) && \
 	 (mkdir -p ./build/tmp/resources/) && \
 	 (find ./src/main/resources/ -name 'docker-compose.*.env' -exec cp "{}" ./build/tmp/resources/ \;) && \
 	 (find ./src/main/resources/ -name 'docker-compose.*.yml' -exec cp "{}" ./build/tmp/resources/ \;) && \
-	 (find ./src/main/resources/ -name 'default-environment.ini' -exec cp "{}" ./build/tmp/resources/ \;))
+	 (find ./src/main/resources/ -name 'default-environment.ini' -exec cp "{}" ./build/tmp/resources/ \;) && \
+	 (find ./src/main/resources/ -name '*.example' -exec cp "{}" ./build/examples/ \;))
 
 .PHONY: compile-app
 compile-app:

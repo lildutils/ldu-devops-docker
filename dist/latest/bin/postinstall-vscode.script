@@ -1,0 +1,115 @@
+#####################################################
+#!/bin/sh
+
+#####################################################
+echo "-==========================================-"
+echo "-===== VSCODE Auto-Installer @ v1.0.0 =====-"
+echo " "
+VSCODE_DEBUG=FALSE
+VSCODE_POSTINSTALL_FILE=postinstall-vscode.sh
+
+#####################################################
+## load ini, if exists
+scriptName=$(echo $(basename $0))
+scriptName=${scriptName%.*}
+currentPath=$(echo $(dirname $0))
+iniFile=$currentPath/$scriptName.ini
+if [ -f "$iniFile" ]; then export $(cat "$iniFile"); fi
+
+#####################################################
+## upgrade OS
+echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] upgrade..."
+if [ "$VSCODE_DEBUG" = "TRUE" ]; then
+    apt update -y
+    apt full-upgrade -y
+    apt autoremove -y
+else
+    apt update -y >/dev/null 2>&1
+    apt full-upgrade -y >/dev/null 2>&1
+    apt autoremove -y >/dev/null 2>&1
+fi
+
+#####################################################
+## check user ownerships
+echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] check..."
+folder=/works
+user=$SUDO_USER
+uid=$(id -u abc)
+gid=$(id -g abc)
+if [ "$VSCODE_DEBUG" = "TRUE" ]; then
+    chown -R $uid:$gid "$folder"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] ownerships for '$folder' ('$user', '$uid:$gid')"
+else
+    chown -R $uid:$gid "$folder" >/dev/null 2>&1
+fi
+
+#####################################################
+## installDevTools
+echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] install 'tools'..."
+if [ "$VSCODE_DEBUG" = "TRUE" ]; then
+    apt-get install -y build-essential inotify-tools curl htop mc nano net-tools
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] build-essential latest"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] $(make --version | grep Make)"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] inotify-tools latest"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] curl latest"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] htop latest"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] mc latest"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] nano latest"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] net-tools latest"
+else
+    apt-get install -y build-essential inotify-tools curl htop mc nano net-tools >/dev/null 2>&1
+fi
+
+#####################################################
+## installGit
+echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] install 'git'..."
+if [ "$VSCODE_DEBUG" = "TRUE" ]; then
+    apt-get install -y git git-flow
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] $(git --version)"
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] git-flow version $(git-flow version)"
+else
+    apt-get install -y git git-flow >/dev/null 2>&1
+fi
+
+#####################################################
+## installDocker
+echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] install 'docker'..."
+if [ "$VSCODE_DEBUG" = "TRUE" ]; then
+    curl -sL "https://get.docker.com" -o /config/install-docker.sh
+    chmod 755 /config/install-docker.sh
+    /bin/sh /config/install-docker.sh
+    rm -rf /config/install-docker.sh
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] $(docker --version)"
+else
+    curl -sL "https://get.docker.com" -o /config/install-docker.sh >/dev/null 2>&1
+    chmod 755 /config/install-docker.sh >/dev/null 2>&1
+    /bin/sh /config/install-docker.sh >/dev/null 2>&1
+    rm -rf /config/install-docker.sh >/dev/null 2>&1
+fi
+
+#####################################################
+## installDockerCompose
+echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] install 'docker-compose'..."
+if [ "$VSCODE_DEBUG" = "TRUE" ]; then
+    apt-get install -y docker-compose
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] $(docker-compose --version)"
+else
+    apt-get install -y docker-compose >/dev/null 2>&1
+fi
+
+#####################################################
+## runScripts
+if [ -f "$currentPath/$VSCODE_POSTINSTALL_FILE" ]; then
+    echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] postinstall..."
+    if [ "$VSCODE_DEBUG" = "TRUE" ]; then
+        echo "$(date +"%Y-%m-%d %H:%M:%S") [DEBUG] run file: '$currentPath/$VSCODE_POSTINSTALL_FILE'"
+        /bin/sh "$currentPath/$VSCODE_POSTINSTALL_FILE"
+    else
+        /bin/sh "$currentPath/$VSCODE_POSTINSTALL_FILE" >/dev/null 2>&1
+    fi
+fi
+
+#####################################################
+echo "$(date +"%Y-%m-%d %H:%M:%S") [ INFO] done."
+echo "-==========================================-"
+exit 0

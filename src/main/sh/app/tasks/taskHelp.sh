@@ -7,6 +7,7 @@ help() {
     echo "  backup                --  make configured backup modes"
     echo "  clean                 --  make a full devops and docker clean, expect /backups"
     echo "  registerGitlabRunner  --  register a gitlab runner into gitlab by configured GITLAB_RUNNER_TOKEN"
+    echo "  postInstallVSCode     --  do an up-and-run postinstall in vscode container"
     echo "  <customTask>          --  run any custom unix command in terminal"
     echo "  "
     echo "args:"

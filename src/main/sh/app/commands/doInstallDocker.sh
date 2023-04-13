@@ -1,11 +1,11 @@
 _doInstallDocker() {
-    mkdir -p ./tmp/
+    mkdir -p $DIR_DEVOPS/.tmp/
 
-    curl -sL "https://get.docker.com" -o ./tmp/install-docker.sh
+    curl -sL "https://get.docker.com" -o $DIR_DEVOPS/.tmp/install-docker.sh
 
-    chmod 755 ./tmp/install-docker.sh
-    /bin/sh ./tmp/install-docker.sh
-    rm -rf ./tmp/install-docker.sh
+    chmod 755 $DIR_DEVOPS/.tmp/install-docker.sh
+    /bin/sh $DIR_DEVOPS/.tmp/install-docker.sh
+    rm -rf $DIR_DEVOPS/.tmp/install-docker.sh
 
     docker --version
 }

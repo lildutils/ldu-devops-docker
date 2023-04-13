@@ -4,144 +4,6 @@ version: "3"
 ####################
 services:
 ##
-  mysql:
-    image: mysql:8-debian
-    container_name: mysql
-    hostname: 'mysql.$DOMAIN'
-    restart: unless-stopped
-    environment:
-      - MYSQL_ROOT_USER=$MYSQL_ROOT_USER
-      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
-    volumes:
-      - /data/mysql/db:/var/lib/mysql
-    networks:
-      - mysql
-
-  phpmyadmin:
-    image: phpmyadmin:5.2.1-apache
-    container_name: phpmyadmin
-    hostname: 'phpmyadmin.$DOMAIN'
-    restart: unless-stopped
-    environment:
-      - PMA_HOST=mysql
-      - PMA_PORT=3306
-    networks:
-      - mysql
-    ports:
-      - 127.0.0.1:6064:8081
-    depends_on:
-      - mysql
-##
-  portainer:
-    image: portainer/portainer-ce:2.17.1-alpine
-    container_name: portainer
-    hostname: 'portainer.$DOMAIN'
-    restart: unless-stopped
-    volumes:
-      - /data/portainer:/data
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - portainer
-    ports:
-      - 127.0.0.1:6062:9000
-##
-  mongodb:
-    image: mongo:4-focal
-    container_name: mongodb
-    hostname: 'mongodb.$DOMAIN'
-    restart: unless-stopped
-    environment:
-      - MONGO_INITDB_ROOT_USERNAME=$MONGO_ROOT_USER
-      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD
-    volumes:
-      - /data/mongo/db:/data/db
-      - /data/mongo/config:/data/configdb
-    networks:
-      - mongo
-
-  mongoxpress:
-    image: mongo-express:1.0.0-alpha
-    container_name: mongoxpress
-    hostname: 'mongoxpress.$DOMAIN'
-    restart: unless-stopped
-    environment:
-      - ME_CONFIG_MONGODB_ADMINUSERNAME=$MONGO_ROOT_USER
-      - ME_CONFIG_MONGODB_ADMINPASSWORD=$MONGO_ROOT_PASSWORD
-      - ME_CONFIG_MONGODB_URL=mongodb://$MONGO_ROOT_USER:$MONGO_ROOT_PASSWORD@mongodb:27017/
-    networks:
-      - mongo
-    ports:
-      - 127.0.0.1:6066:8081
-    depends_on:
-      - mongodb
-##
-  nginx:
-    image: jc21/nginx-proxy-manager:2.10.0
-    container_name: nginx
-    hostname: 'proxy-manager.$DOMAIN'
-    restart: unless-stopped
-    volumes:
-      - /data/nginx/data:/data
-      - /data/nginx/letsencrypt:/etc/letsencrypt
-    networks:
-      - nginx
-    ports:
-      - 80:80
-      - 443:443
-      - 127.0.0.1:6061:81
-##
-  vscode:
-    image: linuxserver/code-server:4.11.0
-    container_name: vscode
-    hostname: 'vscode'
-    restart: unless-stopped
-    environment:
-      - PASSWORD=$VSCODE_ROOT_PASSWORD
-      - SUDO_USER=$VSCODE_SUDO_USER
-      - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
-      - PGID=$VSCODE_SUDO_PGID
-      - PUID=$VSCODE_SUDO_PUID
-      - DEFAULT_WORKSPACE=/works
-      - TZ=Europe/Budapest
-    volumes:
-      - /data/vscode:/config
-      - /$VSCODE_WORKSPACE:/works
-      - /var/run/docker.sock:/var/run/docker.sock
-    networks:
-      - vscode
-    ports:
-      - 127.0.0.1:6063:8443
-##
-  postgres:
-    image: postgres:15-alpine
-    container_name: postgres
-    hostname: 'postgres.$DOMAIN'
-    restart: unless-stopped
-    environment:
-      - PGDATA=/data/postgres
-      - POSTGRES_USER=$POSTGRES_ROOT_USER
-      - POSTGRES_PASSWORD=$POSTGRES_ROOT_PASSWORD
-    volumes:
-      - /data/postgres/data:/var/lib/postgresql/data
-      - /data/postgres/db:/data/postgres
-    networks:
-      - postgres
-
-  pgadmin:
-    image: dpage/pgadmin4:6.21
-    container_name: pgadmin
-    hostname: 'pgadmin.$DOMAIN'
-    restart: unless-stopped
-    environment:
-      - PGADMIN_DEFAULT_EMAIL=$POSTGRES_PGADMIN_USER
-      - PGADMIN_DEFAULT_PASSWORD=$POSTGRES_PGADMIN_PASSWORD
-    networks:
-      - postgres
-    ports:
-      - 127.0.0.1:6065:8081
-    depends_on:
-      - postgres
-##
   gitlab:
     image: gitlab/gitlab-ce:15.10.0-ce.0
     container_name: gitlab
@@ -187,10 +49,60 @@ services:
     depends_on:
       - gitlab
 ##
+  portainer:
+    image: portainer/portainer-ce:2.17.1-alpine
+    container_name: portainer
+    hostname: 'portainer.$DOMAIN'
+    restart: unless-stopped
+    volumes:
+      - /data/portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - portainer
+    ports:
+      - 127.0.0.1:6062:9000
+##
+  vscode:
+    image: linuxserver/code-server:4.11.0
+    container_name: vscode
+    hostname: 'vscode.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - DEFAULT_WORKSPACE=/works
+      - PASSWORD=$VSCODE_ROOT_PASSWORD
+      - PGID=$VSCODE_SUDO_PGID
+      - PUID=$VSCODE_SUDO_PUID
+      - SUDO_USER=$VSCODE_SUDO_USER
+      - SUDO_PASSWORD=$VSCODE_SUDO_PASSWORD
+      - TZ=Europe/Budapest
+    volumes:
+      - /data/vscode:/config
+      - /$VSCODE_WORKSPACE:/works
+      - /var/run/docker.sock:/var/run/docker.sock
+    networks:
+      - vscode
+    ports:
+      - 127.0.0.1:6063:8443
+##
+  nginx:
+    image: jc21/nginx-proxy-manager:2.10.0
+    container_name: nginx
+    hostname: 'proxy-manager.$DOMAIN'
+    restart: unless-stopped
+    volumes:
+      - /data/nginx/data:/data
+      - /data/nginx/letsencrypt:/etc/letsencrypt
+    networks:
+      - nginx
+    ports:
+      - 80:80
+      - 443:443
+      - 127.0.0.1:6061:81
+##
   sonarqubedb:
     image: postgres:15-alpine
     container_name: sonarqubedb
-    hostname: 'sonarqubedb'
+    hostname: 'sonarqubedb.$DOMAIN'
     restart: unless-stopped
     environment:
       - POSTGRES_DATABASE=sonar
@@ -206,7 +118,7 @@ services:
   sonarqube:
     image: sonarqube:9.9.0-community
     container_name: sonarqube
-    hostname: 'sonarqube'
+    hostname: 'sonarqube.$DOMAIN'
     restart: unless-stopped
     environment:
       - SONAR_JDBC_URL=jdbc:postgresql://sonarqubedb:5432/sonar
@@ -220,6 +132,96 @@ services:
       - sonarqube
     depends_on:
       - sonarqubedb
+##
+  mysql:
+    image: mysql:8-debian
+    container_name: mysql
+    hostname: 'mysql.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - MYSQL_ROOT_USER=$MYSQL_ROOT_USER
+      - MYSQL_ROOT_PASSWORD=$MYSQL_ROOT_PASSWORD
+    volumes:
+      - /data/mysql/db:/var/lib/mysql
+    networks:
+      - mysql
+
+  phpmyadmin:
+    image: phpmyadmin:5.2.1-apache
+    container_name: phpmyadmin
+    hostname: 'phpmyadmin.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - PMA_HOST=mysql
+      - PMA_PORT=3306
+    networks:
+      - mysql
+    ports:
+      - 127.0.0.1:6064:8081
+    depends_on:
+      - mysql
+##
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres
+    hostname: 'postgres.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - PGDATA=/data/postgres
+      - POSTGRES_USER=$POSTGRES_ROOT_USER
+      - POSTGRES_PASSWORD=$POSTGRES_ROOT_PASSWORD
+    volumes:
+      - /data/postgres/data:/var/lib/postgresql/data
+      - /data/postgres/db:/data/postgres
+    networks:
+      - postgres
+
+  pgadmin:
+    image: dpage/pgadmin4:6.21
+    container_name: pgadmin
+    hostname: 'pgadmin.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=$POSTGRES_PGADMIN_USER
+      - PGADMIN_DEFAULT_PASSWORD=$POSTGRES_PGADMIN_PASSWORD
+    volumes:
+      - data_pgadmin:/var/lib/pgadmin
+    networks:
+      - postgres
+    ports:
+      - 127.0.0.1:6065:80
+    depends_on:
+      - postgres
+##
+  mongodb:
+    image: mongo:4-focal
+    container_name: mongodb
+    hostname: 'mongodb.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=$MONGO_ROOT_USER
+      - MONGO_INITDB_ROOT_PASSWORD=$MONGO_ROOT_PASSWORD
+    volumes:
+      - /data/mongo/db:/data/db
+      - /data/mongo/config:/data/configdb
+    networks:
+      - mongo
+
+  mongoxpress:
+    image: mongo-express:1.0.0-alpha
+    container_name: mongoxpress
+    hostname: 'mongoxpress.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=$MONGO_ROOT_USER
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=$MONGO_ROOT_PASSWORD
+      - ME_CONFIG_MONGODB_URL=mongodb://$MONGO_ROOT_USER:$MONGO_ROOT_PASSWORD@mongodb:27017/
+    networks:
+      - mongo
+    ports:
+      - 127.0.0.1:6066:8081
+    depends_on:
+      - mongodb
 
 ####################
 volumes:
@@ -230,30 +232,33 @@ volumes:
     name: data_sonarqube_extensions
   data_sonarqube_logs:
     name: data_sonarqube_logs
+##
+  data_pgadmin:
+    name: data_pgadmin
 
 ####################
 networks:
 ##
-  nginx:
-    name: nginx
-##
-  postgres:
-    name: postgres
-##
-  gitlab:
-    name: gitlab
-##
   sonarqube:
     name: sonarqube
-##
-  mongo:
-    name: mongo
-##
-  vscode:
-    name: vscode
 ##
   mysql:
     name: mysql
 ##
+  vscode:
+    name: vscode
+##
+  gitlab:
+    name: gitlab
+##
   portainer:
     name: portainer
+##
+  mongo:
+    name: mongo
+##
+  postgres:
+    name: postgres
+##
+  nginx:
+    name: nginx

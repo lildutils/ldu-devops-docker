@@ -9,11 +9,12 @@ DIR_DEVOPS=/devops
 DIR_DEVOPS_BACKUPS=/backups
 DIR_DEVOPS_DATA=/data
 FAIL2BAN_MAX_RETRY=3
-FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/res/docker-compose.env
 FILE_DEVOPS_COMPOSE=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/res/docker-compose.yml
+FILE_DEVOPS_ENV=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/res/docker-compose.env
 FILE_DEVOPS_MAKE=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/make.sh
-UFW_ALLOW_IN=80,443,22
-UFW_ALLOW_OUT=80,443,53,631
+FILE_DEVOPS_VSCODE=https://raw.githubusercontent.com/lildutils/ldu-devops-docker/master/dist/latest/bin/postinstall-vscode.script
+UFW_ALLOW_IN=http,https,ssh
+UFW_ALLOW_OUT=
 
 ####################
 # main
@@ -45,6 +46,48 @@ main() {
 
 ####################
 # tasks
+
+registerGitlabRunner() {
+    _doRegisterGitlabRunner
+    _doDockerGarbageCollect
+    _doTerminalClean
+}
+
+clean() {
+    _doDockerClean
+
+    _doRemoveFolder "$DEVOPS_DATA_DIR/"
+    _doRemoveFolder "$DEVOPS_ROOT_DIR/"
+
+    _doDockerGarbageCollect
+    _doTerminalClean
+}
+
+postInstallVSCode() {
+    _doPostInstallVSCode
+    _doDockerGarbageCollect
+    _doTerminalClean
+}
+
+install() {
+    _doInstallTools
+
+    _doInstallDocker
+    _doInstallDockerCompose
+
+    _doInstallDevOps
+
+    for mode in ${CRON_BACKUP_MODES//,/ }; do
+        _doInstallCron "$mode"
+    done
+
+    for service in ${DEVOPS_SERVICES//,/ }; do
+        _doDockerComposeUp "$service"
+    done
+
+    _doDockerGarbageCollect
+    _doTerminalClean
+}
 
 backup() {
     currentBackups=$DIR_DEVOPS_BACKUPS/$(echo $(date +"%Y%m%d%H%M%S"))
@@ -86,12 +129,6 @@ backup() {
     _doTerminalClean
 }
 
-registerGitlabRunner() {
-    _doRegisterGitlabRunner
-    _doDockerGarbageCollect
-    _doTerminalClean
-}
-
 help() {
     echo "USAGE"
     echo "  make.sh <task|--help> [<args>]"
@@ -101,6 +138,7 @@ help() {
     echo "  backup                --  make configured backup modes"
     echo "  clean                 --  make a full devops and docker clean, expect /backups"
     echo "  registerGitlabRunner  --  register a gitlab runner into gitlab by configured GITLAB_RUNNER_TOKEN"
+    echo "  postInstallVSCode     --  do an up-and-run postinstall in vscode container"
     echo "  <customTask>          --  run any custom unix command in terminal"
     echo "  "
     echo "args:"
@@ -109,76 +147,8 @@ help() {
     echo "  "
 }
 
-install() {
-    _doInstallTools
-
-    _doInstallDocker
-    _doInstallDockerCompose
-
-    _doInstallDevOps
-
-    for mode in ${CRON_BACKUP_MODES//,/ }; do
-        _doInstallCron "$mode"
-    done
-
-    for service in ${DEVOPS_SERVICES//,/ }; do
-        _doDockerComposeUp "$service"
-    done
-
-    _doDockerGarbageCollect
-    _doTerminalClean
-}
-
-clean() {
-    _doDockerClean
-
-    _doRemoveFolder "$DEVOPS_DATA_DIR/"
-    _doRemoveFolder "$DEVOPS_ROOT_DIR/"
-
-    _doDockerGarbageCollect
-    _doTerminalClean
-}
-
 ####################
 # commands
-
-_doBackupDevOPS() {
-    currentBackupDir=$currentBackups/devops
-
-    mkdir -p $currentBackupDir/
-
-    cp $DIR_DEVOPS/.env $currentBackupDir/docker-compose.env.backup
-    cp $DIR_DEVOPS/docker-compose.yml $currentBackupDir/docker-compose.yml.backup
-}
-
-_doTerminalClean() {
-    read -s -n 1 -p "Press any key to continue..." && printf "\n"
-
-    rm -rf ~/.cache/ ~/.config/ ~/.docker/ ~/.gnupg/ ~/.local/ ~/.nano/ ~/.bash_history ~/.selected_editor ~/.sudo_as_admin_successful
-
-    history -c
-    clear
-}
-
-_doDockerGarbageCollect() {
-    echo y | docker system prune
-}
-
-_doBackupGitlab() {
-    currentBackupDir=$currentBackups/gitlab
-
-    mkdir -p $currentBackupDir/
-
-    ## TODO: backup gitlab
-}
-
-_doBackupPortainer() {
-    currentBackupDir=$currentBackups/portainer
-
-    mkdir -p $currentBackupDir/
-
-    ## TODO: backup portainer
-}
 
 _doDockerClean() {
     docker container kill --force $(docker container ls -aq)
@@ -194,46 +164,6 @@ _doBackupMongoDB() {
     mkdir -p $currentBackupDir/
 
     ## TODO: backup mongodb
-}
-
-_doRegisterGitlabRunner() {
-    docker exec -it gitlabrunner \
-        gitlab-runner register \
-        --non-interactive \
-        --registration-token $GITLAB_RUNNER_REGISTRATION_TOKEN \
-        --name docker-gitlab-runner \
-        --url http://gitlab \
-        --tag-list docker,docker-stable \
-        --executor docker \
-        --docker-image docker:stable
-}
-
-_doBackupCodeServer() {
-    currentBackupDir=$currentBackups/vscode
-
-    mkdir -p $currentBackupDir/
-
-    ## TODO: backup vscode
-}
-
-_doInstallDocker() {
-    mkdir -p ./tmp/
-
-    curl -sL "https://get.docker.com" -o ./tmp/install-docker.sh
-
-    chmod 755 ./tmp/install-docker.sh
-    /bin/sh ./tmp/install-docker.sh
-    rm -rf ./tmp/install-docker.sh
-
-    docker --version
-}
-
-_doBackupPostgres() {
-    currentBackupDir=$currentBackups/db/postgres
-
-    mkdir -p $currentBackupDir/
-
-    ## TODO: backup postgres
 }
 
 _doInstallDevOps() {
@@ -264,27 +194,21 @@ _doInstallDevOps() {
     fi
 }
 
-_doBackupNginx() {
-    currentBackupDir=$currentBackups/nginx
+_doBackupPortainer() {
+    currentBackupDir=$currentBackups/portainer
 
     mkdir -p $currentBackupDir/
 
-    ## TODO: backup nginx
+    ## TODO: backup portainer
 }
 
-_doDockerComposeUp() {
-    $dockerComposeFile=docker-compose.yml
-    $dockerComposeService=$1
+_doBackupDevOPS() {
+    currentBackupDir=$currentBackups/devops
 
-    docker-compose \
-        --project-name $dockerComposeService \
-        --project-directory $DIR_DEVOPS \
-        --file $DIR_DEVOPS/$dockerComposeFile \
-        up -d $dockerComposeService
+    mkdir -p $currentBackupDir/
 
-    if [ "$dockerComposeService" = "vscode" ]; then
-        _doDockerComposeUpPostInstallVSCode
-    fi
+    cp $DIR_DEVOPS/.env $currentBackupDir/docker-compose.env.backup
+    cp $DIR_DEVOPS/docker-compose.yml $currentBackupDir/docker-compose.yml.backup
 }
 
 _doBackupDockerRegistry() {
@@ -293,6 +217,34 @@ _doBackupDockerRegistry() {
     mkdir -p $currentBackupDir/
 
     ## TODO: backup registry
+}
+
+_doBackupGitlab() {
+    currentBackupDir=$currentBackups/gitlab
+
+    mkdir -p $currentBackupDir/
+
+    ## TODO: backup gitlab
+}
+
+_doBackupPostgres() {
+    currentBackupDir=$currentBackups/db/postgres
+
+    mkdir -p $currentBackupDir/
+
+    ## TODO: backup postgres
+}
+
+_doRegisterGitlabRunner() {
+    docker exec -it gitlabrunner \
+        gitlab-runner register \
+        --non-interactive \
+        --registration-token $GITLAB_RUNNER_REGISTRATION_TOKEN \
+        --name docker-gitlab-runner \
+        --url http://gitlab \
+        --tag-list docker,docker-stable \
+        --executor docker \
+        --docker-image docker:stable
 }
 
 _doInstallTools() {
@@ -321,9 +273,11 @@ __doInstallToolsUFW() {
     for rule in ${UFW_ALLOW_IN//,/ }; do
         ufw allow in $rule
     done
-    for rule in ${UFW_ALLOW_OUT//,/ }; do
-        ufw allow out $rule
-    done
+    if [ ! "$UFW_ALLOW_OUT" == "" ]; then
+        for rule in ${UFW_ALLOW_OUT//,/ }; do
+            ufw allow out $rule
+        done
+    fi
     ufw reload
 }
 
@@ -339,42 +293,8 @@ __doInstallToolsFail2ban() {
     systemctl restart fail2ban
 }
 
-_doBackupMySQL() {
-    currentBackupDir=$currentBackups/db/mysql
-
-    mkdir -p $currentBackupDir/
-
-    ## TODO: backup mysql
-}
-
-_doDockerComposeUpPostInstallVSCode() {
-    cmd="echo \"#!/bin/sh\">/config/install-vscode.sh"
-    ## upgrade vscode
-    cmd="$cmd ; echo \"apt update\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"apt full-upgrade -y\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"apt autoremove -y\">>/config/install-vscode.sh"
-    ## install devtools
-    cmd="$cmd ; echo \"apt-get install -y build-essential inotify-tools curl htop mc nano net-tools\">>/config/install-vscode.sh"
-    ## install git
-    cmd="$cmd ; echo \"apt-get install -y git git-flow\">>/config/install-vscode.sh"
-    ## install docker
-    cmd="$cmd ; echo \"curl -sL https://get.docker.com -o /config/install-docker.sh\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"chmod 755 /config/install-docker.sh\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"/bin/sh /config/install-docker.sh\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"rm -rf /config/install-docker.sh\">>/config/install-vscode.sh"
-    ## install docker-compose
-    cmd="$cmd ; echo \"apt-get install -y docker-compose\">>/config/install-vscode.sh"
-    ## check versions
-    cmd="$cmd ; echo \"echo \$(git --version)\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"echo git-flow version \$(git-flow version)\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"echo \$(docker --version)\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"echo \$(docker-compose --version)\">>/config/install-vscode.sh"
-    ## check ownerships
-    cmd="$cmd ; echo \"echo \$SUDO_USER, \$(id -u \$SUDO_USER):\$(id -g \$SUDO_USER)\">>/config/install-vscode.sh"
-    cmd="$cmd ; echo \"chown -R \$SUDO_USER:\$SUDO_USER /works\">>/config/install-vscode.sh"
-
-    sleep 5
-    docker exec -i vscode bash -c "$cmd"
+_doTerminalPause() {
+    read -s -n 1 -p "Press any key to continue..." && printf "\n"
 }
 
 _doInstallCron() {
@@ -389,18 +309,97 @@ _doInstallCron() {
     crontab -l
 }
 
-_doBackupSonarQube() {
-    currentBackupDir=$currentBackups/sonarqube
+_doPostInstallVSCode() {
+    mkdir -p $DIR_DEVOPS/.tmp/
+
+    curl -sL "$FILE_DEVOPS_VSCODE" -o $DIR_DEVOPS/.tmp/install-vscode.sh
+    nano $DIR_DEVOPS/.tmp/postinstall-vscode.sh
+
+    docker cp vscode:/config/install-vscode.sh $DIR_DEVOPS/.tmp/install-vscode.sh
+    docker cp vscode:/config/postinstall-vscode.sh $DIR_DEVOPS/.tmp/postinstall-vscode.sh
+
+    docker exec -it vscode sh -c \
+        "chmod 755 /config/install-vscode.sh && \
+         chmod 755 /config/postinstall-vscode.sh && \
+         sudo /bin/sh /config/install-vscode.sh"
+}
+
+_doDockerComposeUp() {
+    $dockerComposeFile=docker-compose.yml
+    $dockerComposeService=$1
+
+    docker-compose \
+        --project-name $dockerComposeService \
+        --project-directory $DIR_DEVOPS \
+        --file $DIR_DEVOPS/$dockerComposeFile \
+        up -d $dockerComposeService
+
+    if [ "$dockerComposeService" = "vscode" ]; then
+        _doDockerComposeUpPostInstallVSCode
+    fi
+}
+
+_doBackupCodeServer() {
+    currentBackupDir=$currentBackups/vscode
 
     mkdir -p $currentBackupDir/
 
-    ## TODO: backup sonarqube
+    ## TODO: backup vscode
+}
+
+_doInstallDocker() {
+    mkdir -p $DIR_DEVOPS/.tmp/
+
+    curl -sL "https://get.docker.com" -o $DIR_DEVOPS/.tmp/install-docker.sh
+
+    chmod 755 $DIR_DEVOPS/.tmp/install-docker.sh
+    /bin/sh $DIR_DEVOPS/.tmp/install-docker.sh
+    rm -rf $DIR_DEVOPS/.tmp/install-docker.sh
+
+    docker --version
+}
+
+_doBackupMySQL() {
+    currentBackupDir=$currentBackups/db/mysql
+
+    mkdir -p $currentBackupDir/
+
+    ## TODO: backup mysql
+}
+
+_doTerminalClean() {
+    _doTerminalPause
+
+    rm -rf ~/.cache/ ~/.config/ ~/.docker/ ~/.gnupg/ ~/.local/ ~/.nano/ ~/.bash_history ~/.selected_editor ~/.sudo_as_admin_successful
+
+    history -c
+    clear
+}
+
+_doBackupNginx() {
+    currentBackupDir=$currentBackups/nginx
+
+    mkdir -p $currentBackupDir/
+
+    ## TODO: backup nginx
 }
 
 _doInstallDockerCompose() {
     apt-get install -y docker-compose
 
     docker-compose --version
+}
+
+_doDockerGarbageCollect() {
+    echo y | docker system prune
+}
+
+_doBackupSonarQube() {
+    currentBackupDir=$currentBackups/sonarqube
+
+    mkdir -p $currentBackupDir/
+
+    ## TODO: backup sonarqube
 }
 
 ####################

@@ -1,0 +1,2 @@
+VSCODE_DEBUG=FALSE
+VSCODE_POSTINSTALL_FILE=postinstall-vscode.sh
