@@ -24,9 +24,11 @@ __doInstallToolsUFW() {
     for rule in ${UFW_ALLOW_IN//,/ }; do
         ufw allow in $rule
     done
-    for rule in ${UFW_ALLOW_OUT//,/ }; do
-        ufw allow out $rule
-    done
+    if [ ! "$UFW_ALLOW_OUT" == "" ]; then
+        for rule in ${UFW_ALLOW_OUT//,/ }; do
+            ufw allow out $rule
+        done
+    fi
     ufw reload
 }
 
