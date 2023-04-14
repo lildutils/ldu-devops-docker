@@ -75,8 +75,8 @@ Services is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing el
 
 |     | **Service**  | **Image**                                | **Port(s)** |
 |----:|:-------------|:-----------------------------------------|------------:|
-|   1 | nginx        | jc21/nginx-proxy-manager:2.10.0          | 80,443,6061 |
-|   2 | portainer    | portainer/portainer-ce:2.17.1-alpine     |        6062 |
+|   1 | portainer    | portainer/portainer-ce:2.17.1-alpine     |        6061 |
+|   2 | nginx        | jc21/nginx-proxy-manager:2.10.0          | 80,443,6062 |
 |   3 | vscode       | linuxserver/code-server:4.11.0           |        6063 |
 |   4 | mysql        | mysql:8-debian                           |  3306,33060 |
 |   5 | phpmyadmin   | phpmyadmin:5.2.1-apache                  |        6064 |
