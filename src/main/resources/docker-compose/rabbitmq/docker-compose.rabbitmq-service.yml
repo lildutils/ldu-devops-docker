@@ -1,0 +1,16 @@
+##
+  rabbitmq:
+    image: rabbitmq:3-management-alpine
+    container_name: rabbitmq
+    hostname: 'rabbitmq.$DOMAIN'
+    restart: unless-stopped
+    environment:
+      - RABBITMQ_DEFAULT_USER=$RABBITMQ_ROOT_USER
+      - RABBITMQ_DEFAULT_PASS=$RABBITMQ_ROOT_PASSWORD
+      - RABBITMQ_DEFAULT_VHOST=$RABBITMQ_VHOST
+    volumes:
+      - /data/rabbitmq/data:/var/lib/rabbitmq
+    networks:
+      - rabbitmq
+    ports:
+      - 127.0.0.1:6067:15672

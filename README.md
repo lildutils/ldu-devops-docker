@@ -88,6 +88,7 @@ Services is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing el
 |  11 | gitlabrunner | gitlab/gitlab-runner:alpine3.15-v15.10.0 |           - |
 |  12 | sonarqubedb  | postgres:15-alpine                       |        5432 |
 |  13 | sonarqube    | sonarqube:9.9.0-community                |        9000 |
+|  14 | rabbitmq     | rabbitmq:3-management-alpine             |        6067 |
 
 ### Auto-Install
 
@@ -133,7 +134,14 @@ UFW_ALLOW_OUT=comma separated list of ports (f.e.: 80,443,53,631)
 Docker Compose Service Configurations is Coming soon... Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
 
 ``` env
+__A__=________________________________________________________________________________
+__B__=________________________________________________________________________________
+__C__=________________________________________________________________________________
+__D__=________________________________________________________________________________
 DOMAIN=domain name of the server
+__E__=________________________________________________________________________________
+__F__=________________________________________________________________________________
+__G__=________________________________________________________________________________
 GITLAB_ROOT_USER=username
 GITLAB_ROOT_PASSWORD=password
 GITLAB_EXTERNAL_URL=http(s) schema url of the gitlab service
@@ -147,29 +155,51 @@ GITLAB_SMTP_PASSWORD=password
 GITLAB_SMTP_DOMAIN=smtp server allowed domain
 GITLAB_SMTP_FROM=gitlab@smtp server allowed domain
 GITLAB_SMTP_REPLY=noreply@smtp server allowed domain
+__H__=________________________________________________________________________________
+__I__=________________________________________________________________________________
+__J__=________________________________________________________________________________
+__K__=________________________________________________________________________________
+__L__=________________________________________________________________________________
+__M__=________________________________________________________________________________
 MONGO_ROOT_USER=username
 MONGO_ROOT_PASSWORD=password
 MYSQL_ROOT_USER=username
 MYSQL_ROOT_PASSWORD=password
+__N__=________________________________________________________________________________
 NGINX_ROOT_USER=admin@example.com
 NGINX_ROOT_PASSWORD=changeme
+__O__=________________________________________________________________________________
+__P__=________________________________________________________________________________
 PORTAINER_ROOT_USER=username
 PORTAINER_ROOT_PASSWORD=password
 POSTGRES_ROOT_USER=username
 POSTGRES_ROOT_PASSWORD=password
 POSTGRES_PGADMIN_USER=useremail
 POSTGRES_PGADMIN_PASSWORD=password
+__Q__=________________________________________________________________________________
+__R__=________________________________________________________________________________
+RABBITMQ_ROOT_USER=root
+RABBITMQ_ROOT_PASSWORD=password
+RABBITMQ_VHOST=local
+__S__=________________________________________________________________________________
 SONARQUBE_ROOT_USER=admin
 SONARQUBE_ROOT_PASSWORD=admin
 SONARQUBE_DB_USER=sonar
 SONARQUBE_DB_PASSWORD=password
+__T__=________________________________________________________________________________
+__U__=________________________________________________________________________________
+__V__=________________________________________________________________________________
 VSCODE_ROOT_USER=username
 VSCODE_ROOT_PASSWORD=password
-VSCODE_SUDO_USER=username
-VSCODE_SUDO_PASSWORD=password
-VSCODE_SUDO_PUID=user id
-VSCODE_SUDO_PGID=group id
-VSCODE_WORKSPACE=path of the user home directory
+VSCODE_SUDO_USER=my username
+VSCODE_SUDO_PASSWORD=my password
+VSCODE_SUDO_PUID=my user-id
+VSCODE_SUDO_PGID=my group-id
+VSCODE_WORKSPACE=path to my home directory
+__W__=________________________________________________________________________________
+__X__=________________________________________________________________________________
+__Y__=________________________________________________________________________________
+__Z__=________________________________________________________________________________
 ```
 
 ### Usage
